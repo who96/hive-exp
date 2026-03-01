@@ -4,9 +4,14 @@ import {
   ListToolsRequestSchema,
   CallToolRequestSchema,
 } from "@modelcontextprotocol/sdk/types.js";
-import { toolDefinitions, toolHandlers } from "./tools/index.js";
+import { toolDefinitions, createToolHandlers } from "./tools/index.js";
+import { createContext } from "./context.js";
+import type { HiveExpContext } from "./context.js";
 
-export function createServer(): Server {
+export function createServer(ctx?: HiveExpContext): Server {
+  const context = ctx ?? createContext();
+  const handlers = createToolHandlers(context);
+
   const server = new Server(
     { name: "hive-exp", version: "0.1.0" },
     { capabilities: { tools: {} } },
@@ -18,7 +23,7 @@ export function createServer(): Server {
 
   server.setRequestHandler(CallToolRequestSchema, async (request) => {
     const { name, arguments: args } = request.params;
-    const handler = toolHandlers[name];
+    const handler = handlers[name];
     if (!handler) {
       return {
         content: [{ type: "text", text: `Unknown tool: ${name}` }],
