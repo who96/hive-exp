@@ -1,0 +1,31 @@
+id: "exp_1772323204000_48d2af34"
+type: "experience"
+schema_version: "1.1.0"
+signals:
+  - "discord_token_invalid"
+scope: "project"
+preconditions:
+  - "OpenClaw project"
+  - "Discord application exists in Developer Portal"
+strategy:
+  name: "rotate_discord_token_and_restart"
+  description: "进入 Discord Developer Portal 重置 Bot Token，更新 `.env` 中 `BOT_TOKEN`，并重启进程清理旧连接。确认 token 未写入历史提交，使用 `.env.local` 等受控文件进行本地持久化并从安全储存读取。"
+  category: "repair"
+outcome:
+  status: "success"
+  evidence: "替换无效或过期 token 后，机器人能够成功登录网关，登录日志中不再出现 unauthorized 错误。"
+confidence: 0.94
+source_agent: "seed-data"
+signature: "hmac-sha256:seed-placeholder-not-verified"
+validated_by: null
+promoted: true
+provisional: false
+provisional_deadline: null
+supersedes: null
+superseded_by: null
+risk_level: "low"
+created: "2026-03-01T00:00:04Z"
+last_confirmed: "2026-03-01T00:00:04Z"
+decay_halflife_days: 90
+archived: false
+archived_reason: null

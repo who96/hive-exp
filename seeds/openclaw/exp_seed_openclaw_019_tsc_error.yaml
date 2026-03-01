@@ -1,0 +1,31 @@
+id: "exp_1772323219000_59e8c037"
+type: "experience"
+schema_version: "1.1.0"
+signals:
+  - "tsc_error"
+scope: "project"
+preconditions:
+  - "OpenClaw project"
+  - "TypeScript compilation step enabled"
+strategy:
+  name: "fix_typescript_type_violations"
+  description: "读取 `tsconfig` 的 `strict` 与 `module` 约束，与实际代码类型声明对齐；将隐式 any 显式化、修正接口字段名、升级依赖的类型包，并在 CI 中锁定版本。"
+  category: "repair"
+outcome:
+  status: "success"
+  evidence: "清理类型问题后，`pnpm tsc` 再次通过，运行时异常下降并减少 CI 失败率。"
+confidence: 0.95
+source_agent: "seed-data"
+signature: "hmac-sha256:seed-placeholder-not-verified"
+validated_by: null
+promoted: true
+provisional: false
+provisional_deadline: null
+supersedes: null
+superseded_by: null
+risk_level: "low"
+created: "2026-03-01T00:00:19Z"
+last_confirmed: "2026-03-01T00:00:19Z"
+decay_halflife_days: 90
+archived: false
+archived_reason: null

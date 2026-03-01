@@ -1,0 +1,31 @@
+id: "exp_1772323213000_13534697"
+type: "experience"
+schema_version: "1.1.0"
+signals:
+  - "bot_routing_failure"
+scope: "project"
+preconditions:
+  - "OpenClaw project"
+  - "Multiple bots deployed in one cluster"
+strategy:
+  name: "validate_bot_id_to_guild_mapping"
+  description: "在消息入口统一校验目标 Guild 与 botInstance 映射关系，避免通过轮询选择错误实例。修复后端路由策略，加入 fallback 与告警，出现未知 botId 时拒绝分发。"
+  category: "repair"
+outcome:
+  status: "success"
+  evidence: "修正映射后同一 Guild 的消息只由预期 bot 处理，跨 bot 干扰明显下降。"
+confidence: 0.92
+source_agent: "seed-data"
+signature: "hmac-sha256:seed-placeholder-not-verified"
+validated_by: null
+promoted: true
+provisional: false
+provisional_deadline: null
+supersedes: null
+superseded_by: null
+risk_level: "medium"
+created: "2026-03-01T00:00:13Z"
+last_confirmed: "2026-03-01T00:00:13Z"
+decay_halflife_days: 90
+archived: false
+archived_reason: null

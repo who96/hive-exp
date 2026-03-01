@@ -1,0 +1,31 @@
+id: "exp_1772323216000_234abcd0"
+type: "experience"
+schema_version: "1.1.0"
+signals:
+  - "load_balancing_uneven"
+scope: "project"
+preconditions:
+  - "OpenClaw project"
+  - "Shard or instance scaling enabled"
+strategy:
+  name: "balance_route_by_shard_load"
+  description: "建立按 shard/实例负载分片策略，引入权重心跳与最少连接数调度，避免事件全部落到同一 worker。对超载实例启用自动扩缩容策略。"
+  category: "optimize"
+outcome:
+  status: "success"
+  evidence: "均衡策略上线后，CPU 峰值与处理延迟下降，消息响应时延趋于一致。"
+confidence: 0.88
+source_agent: "seed-data"
+signature: "hmac-sha256:seed-placeholder-not-verified"
+validated_by: null
+promoted: true
+provisional: false
+provisional_deadline: null
+supersedes: null
+superseded_by: null
+risk_level: "medium"
+created: "2026-03-01T00:00:16Z"
+last_confirmed: "2026-03-01T00:00:16Z"
+decay_halflife_days: 90
+archived: false
+archived_reason: null

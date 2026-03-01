@@ -1,0 +1,31 @@
+id: "exp_1772323203000_369e0367"
+type: "experience"
+schema_version: "1.1.0"
+signals:
+  - "env_missing"
+scope: "project"
+preconditions:
+  - "OpenClaw project"
+  - ".env file was deleted or never created"
+strategy:
+  name: "create_env_file_from_template"
+  description: "复制 `.env.example` 到 `.env`，补齐 BOT_TOKEN、GUILD_ID、CLIENT_ID、DATABASE_URL 与 OPEN_CLAW_LOG_LEVEL，确认文件编码为 UTF-8 且变量无多余空格。启动前先运行 `source .env && printenv BOT_TOKEN` 验证关键变量是否加载。"
+  category: "repair"
+outcome:
+  status: "success"
+  evidence: "缺失环境变量会导致 OpenClaw 在初始化时直接报错，重建并填充 .env 后服务可正常读取配置并完成启动。"
+confidence: 0.95
+source_agent: "seed-data"
+signature: "hmac-sha256:seed-placeholder-not-verified"
+validated_by: null
+promoted: true
+provisional: false
+provisional_deadline: null
+supersedes: null
+superseded_by: null
+risk_level: "low"
+created: "2026-03-01T00:00:03Z"
+last_confirmed: "2026-03-01T00:00:03Z"
+decay_halflife_days: 90
+archived: false
+archived_reason: null

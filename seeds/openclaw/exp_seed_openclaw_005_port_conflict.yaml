@@ -1,0 +1,31 @@
+id: "exp_1772323205000_5b075b01"
+type: "experience"
+schema_version: "1.1.0"
+signals:
+  - "port_conflict"
+scope: "project"
+preconditions:
+  - "OpenClaw project"
+  - "Port 3000 is expected to be free"
+strategy:
+  name: "change_service_port_and_restart"
+  description: "检查端口占用（例如 `lsof -i :3000`），停止冲突进程或设置 `PORT` 为备用端口。更新 `.env` 中端口变量并同步代理转发规则（如 Nginx、Cloudflare Tunnel）。"
+  category: "repair"
+outcome:
+  status: "success"
+  evidence: "端口冲突清理后，OpenClaw 健康检查返回 200，服务重启成功且无 bind EADDRINUSE。"
+confidence: 0.93
+source_agent: "seed-data"
+signature: "hmac-sha256:seed-placeholder-not-verified"
+validated_by: null
+promoted: true
+provisional: false
+provisional_deadline: null
+supersedes: null
+superseded_by: null
+risk_level: "low"
+created: "2026-03-01T00:00:05Z"
+last_confirmed: "2026-03-01T00:00:05Z"
+decay_halflife_days: 90
+archived: false
+archived_reason: null

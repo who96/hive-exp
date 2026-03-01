@@ -1,0 +1,31 @@
+id: "exp_1772323211000_37bc9e31"
+type: "experience"
+schema_version: "1.1.0"
+signals:
+  - "slash_command_not_registered"
+scope: "project"
+preconditions:
+  - "OpenClaw project"
+  - "Slash commands expected in guild"
+strategy:
+  name: "redeploy_command_definition"
+  description: "清理过期 command cache 并重新执行部署脚本（区分 guild 全局），确认 bot 使用同一 CLIENT_ID 与部署脚本中的 CLIENT_ID。执行后观察 Discord 开发者后台的 `slash command` 列表同步。"
+  category: "repair"
+outcome:
+  status: "success"
+  evidence: "命令重新注册后，客户端输入 `/<command>` 可见并可触发对应交互处理函数。"
+confidence: 0.95
+source_agent: "seed-data"
+signature: "hmac-sha256:seed-placeholder-not-verified"
+validated_by: null
+promoted: true
+provisional: false
+provisional_deadline: null
+supersedes: null
+superseded_by: null
+risk_level: "low"
+created: "2026-03-01T00:00:11Z"
+last_confirmed: "2026-03-01T00:00:11Z"
+decay_halflife_days: 90
+archived: false
+archived_reason: null

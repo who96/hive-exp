@@ -1,0 +1,31 @@
+id: "exp_1772323225000_38db38fb"
+type: "experience"
+schema_version: "1.1.0"
+signals:
+  - "test_suite_setup_failed"
+scope: "project"
+preconditions:
+  - "OpenClaw project"
+  - "CI or local test scripts configured"
+strategy:
+  name: "repair_test_environment_bootstrap"
+  description: "补齐测试环境变量、mock 外部服务和数据库初始化脚本；固定测试端口与工作目录，使 `pnpm test` 在空目录和并行执行下可复现。"
+  category: "repair"
+outcome:
+  status: "success"
+  evidence: "修正测试前置后，测试套件可稳定启动并通过初始化阶段，减少 CI 团队的 false negative。"
+confidence: 0.9
+source_agent: "seed-data"
+signature: "hmac-sha256:seed-placeholder-not-verified"
+validated_by: null
+promoted: true
+provisional: false
+provisional_deadline: null
+supersedes: null
+superseded_by: null
+risk_level: "medium"
+created: "2026-03-01T00:00:25Z"
+last_confirmed: "2026-03-01T00:00:25Z"
+decay_halflife_days: 90
+archived: false
+archived_reason: null

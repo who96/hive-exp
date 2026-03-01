@@ -1,0 +1,31 @@
+id: "exp_1772323218000_47b4146a"
+type: "experience"
+schema_version: "1.1.0"
+signals:
+  - "memory_leak_event_listener"
+scope: "project"
+preconditions:
+  - "OpenClaw project"
+  - "Long-running bot instance"
+strategy:
+  name: "cleanup_event_listeners"
+  description: "审计 `client.on` 注册点，确保组件销毁时调用 `off`/`removeListener`，避免重复动态加载导致监听器累计。对热更新场景引入一次性注册守卫与实例级计数告警。"
+  category: "repair"
+outcome:
+  status: "success"
+  evidence: "回收监听器后，进程内存增长速率回落到稳定区间，`EventEmitter` 警告明显减少。"
+confidence: 0.9
+source_agent: "seed-data"
+signature: "hmac-sha256:seed-placeholder-not-verified"
+validated_by: null
+promoted: true
+provisional: false
+provisional_deadline: null
+supersedes: null
+superseded_by: null
+risk_level: "high"
+created: "2026-03-01T00:00:18Z"
+last_confirmed: "2026-03-01T00:00:18Z"
+decay_halflife_days: 90
+archived: false
+archived_reason: null

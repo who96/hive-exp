@@ -1,0 +1,31 @@
+id: "exp_1772323214000_011e9aca"
+type: "experience"
+schema_version: "1.1.0"
+signals:
+  - "shared_database_conflict"
+scope: "project"
+preconditions:
+  - "OpenClaw project"
+  - "Multiple bot processes share one Postgres instance"
+strategy:
+  name: "isolate_storage_schemas_per_bot"
+  description: "为每个 bot 分配独立数据库 schema 或独立连接实例，启用行级租户隔离（如 tenant_id）并加 schema migration 边界，避免会话与状态互相覆盖。"
+  category: "repair"
+outcome:
+  status: "success"
+  evidence: "拆分存储后，不同 bot 的状态不会互相覆盖，任务重试与用户上下文恢复正确。"
+confidence: 0.9
+source_agent: "seed-data"
+signature: "hmac-sha256:seed-placeholder-not-verified"
+validated_by: null
+promoted: true
+provisional: false
+provisional_deadline: null
+supersedes: null
+superseded_by: null
+risk_level: "high"
+created: "2026-03-01T00:00:14Z"
+last_confirmed: "2026-03-01T00:00:14Z"
+decay_halflife_days: 90
+archived: false
+archived_reason: null

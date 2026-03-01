@@ -1,0 +1,31 @@
+id: "exp_1772323217000_357f689d"
+type: "experience"
+schema_version: "1.1.0"
+signals:
+  - "unhandled_rejection"
+scope: "project"
+preconditions:
+  - "OpenClaw project"
+  - "Runtime with async handlers"
+strategy:
+  name: "add_global_rejection_handlers"
+  description: "全局监听 `unhandledRejection` 与 `uncaughtException`，并在每个异步路径补齐 `catch` 与 Promise 链兜底，记录 traceId 与上下文。对不可恢复错误触发重试与熔断策略。"
+  category: "repair"
+outcome:
+  status: "success"
+  evidence: "加入统一错误处理后，原先导致进程退出的未处理异常可被降级处理，服务可持续运行并输出可诊断日志。"
+confidence: 0.94
+source_agent: "seed-data"
+signature: "hmac-sha256:seed-placeholder-not-verified"
+validated_by: null
+promoted: true
+provisional: false
+provisional_deadline: null
+supersedes: null
+superseded_by: null
+risk_level: "high"
+created: "2026-03-01T00:00:17Z"
+last_confirmed: "2026-03-01T00:00:17Z"
+decay_halflife_days: 90
+archived: false
+archived_reason: null

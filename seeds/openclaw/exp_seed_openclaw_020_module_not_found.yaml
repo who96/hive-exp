@@ -1,0 +1,31 @@
+id: "exp_1772323220000_6c1d6c04"
+type: "experience"
+schema_version: "1.1.0"
+signals:
+  - "module_not_found"
+scope: "project"
+preconditions:
+  - "OpenClaw project"
+  - "ESM/CJS mixed imports present"
+strategy:
+  name: "align_module_system_and_paths"
+  description: "统一 package.json 的 `type` 与 tsup/esbuild 配置，确认路径别名在运行时也能解析，清理无效构建输出与错误 `import`/`require` 组合。必要时启用条件导出与桥接文件。"
+  category: "repair"
+outcome:
+  status: "success"
+  evidence: "统一模块系统后，启动时 `Cannot find module` 与 `ERR_REQUIRE_ESM` 报错消失。"
+confidence: 0.93
+source_agent: "seed-data"
+signature: "hmac-sha256:seed-placeholder-not-verified"
+validated_by: null
+promoted: true
+provisional: false
+provisional_deadline: null
+supersedes: null
+superseded_by: null
+risk_level: "medium"
+created: "2026-03-01T00:00:20Z"
+last_confirmed: "2026-03-01T00:00:20Z"
+decay_halflife_days: 90
+archived: false
+archived_reason: null

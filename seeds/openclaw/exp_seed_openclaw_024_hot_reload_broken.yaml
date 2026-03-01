@@ -1,0 +1,31 @@
+id: "exp_1772323224000_4b0fe4c8"
+type: "experience"
+schema_version: "1.1.0"
+signals:
+  - "hot_reload_broken"
+scope: "project"
+preconditions:
+  - "OpenClaw project"
+  - "File watcher enabled in dev"
+strategy:
+  name: "fix_hot_reload_watch_config"
+  description: "检查 watch 目录与排除模式，确保 Node/Bun 的监听器覆盖源码文件变化；在容器内启用 `CHOKIDAR_USEPOLLING` 或卷挂载一致性设置，修复 HMR 失效。"
+  category: "repair"
+outcome:
+  status: "success"
+  evidence: "修正监听配置后，修改代码无需重启即可触发重载，调试效率明显提升。"
+confidence: 0.88
+source_agent: "seed-data"
+signature: "hmac-sha256:seed-placeholder-not-verified"
+validated_by: null
+promoted: true
+provisional: false
+provisional_deadline: null
+supersedes: null
+superseded_by: null
+risk_level: "low"
+created: "2026-03-01T00:00:24Z"
+last_confirmed: "2026-03-01T00:00:24Z"
+decay_halflife_days: 90
+archived: false
+archived_reason: null

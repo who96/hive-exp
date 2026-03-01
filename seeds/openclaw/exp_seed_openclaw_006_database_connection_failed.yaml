@@ -1,0 +1,31 @@
+id: "exp_1772323206000_6d3c06ce"
+type: "experience"
+schema_version: "1.1.0"
+signals:
+  - "database_connection_failed"
+scope: "project"
+preconditions:
+  - "OpenClaw project"
+  - "Database credentials configured"
+strategy:
+  name: "fix_database_dsn"
+  description: "核对 `DATABASE_URL` 的协议、主机、端口与数据库名是否正确，确认 URL 中密码转义，且数据库用户具备建库建表权限。尝试 `psql "$DATABASE_URL" -c '\\conninfo'`（或对应驱动）验证链路后再启动。"
+  category: "repair"
+outcome:
+  status: "success"
+  evidence: "修复错误 DSN 并补充权限后，数据库连接不再超时，迁移与查询流程恢复。"
+confidence: 0.93
+source_agent: "seed-data"
+signature: "hmac-sha256:seed-placeholder-not-verified"
+validated_by: null
+promoted: true
+provisional: false
+provisional_deadline: null
+supersedes: null
+superseded_by: null
+risk_level: "medium"
+created: "2026-03-01T00:00:06Z"
+last_confirmed: "2026-03-01T00:00:06Z"
+decay_halflife_days: 90
+archived: false
+archived_reason: null

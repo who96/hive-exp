@@ -1,0 +1,31 @@
+id: "exp_1772323208000_6e5aa198"
+type: "experience"
+schema_version: "1.1.0"
+signals:
+  - "bot_not_responding"
+scope: "project"
+preconditions:
+  - "OpenClaw project"
+  - "Discord bot is running"
+strategy:
+  name: "verify_gateway_connection_and_intent_filters"
+  description: "检查 Gateway 连接状态与会话 ID 是否有效，确认进程未因未捕获异常退出。重启时输出 `ready` 回调，验证监听器已注册，并确保不会在命令入口误过滤消息。"
+  category: "repair"
+outcome:
+  status: "success"
+  evidence: "重启后日志出现 ready 事件和心跳 ack，`/ping` 或测试命令在目标频道成功返回。"
+confidence: 0.9
+source_agent: "seed-data"
+signature: "hmac-sha256:seed-placeholder-not-verified"
+validated_by: null
+promoted: true
+provisional: false
+provisional_deadline: null
+supersedes: null
+superseded_by: null
+risk_level: "medium"
+created: "2026-03-01T00:00:08Z"
+last_confirmed: "2026-03-01T00:00:08Z"
+decay_halflife_days: 90
+archived: false
+archived_reason: null

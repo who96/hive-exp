@@ -1,0 +1,31 @@
+id: "exp_1772323207000_7f70b29b"
+type: "experience"
+schema_version: "1.1.0"
+signals:
+  - "permission_denied"
+scope: "project"
+preconditions:
+  - "OpenClaw project"
+  - "Node.js installed globally requested"
+strategy:
+  name: "install_node_modules_with_local_prefix"
+  description: "对于全局 npm 安装权限异常，优先配置 npm prefix 至用户目录（如 `npm config set prefix ~/.npm-global`）并刷新 PATH，避免 `sudo npm install -g`。若已出现残留权限问题，先清理旧目录权限后重试。"
+  category: "repair"
+outcome:
+  status: "success"
+  evidence: "将全局安装路径切换到用户目录后，后续安装命令不再出现 EACCES，无需管理员权限即可完成。"
+confidence: 0.91
+source_agent: "seed-data"
+signature: "hmac-sha256:seed-placeholder-not-verified"
+validated_by: null
+promoted: true
+provisional: false
+provisional_deadline: null
+supersedes: null
+superseded_by: null
+risk_level: "low"
+created: "2026-03-01T00:00:07Z"
+last_confirmed: "2026-03-01T00:00:07Z"
+decay_halflife_days: 90
+archived: false
+archived_reason: null
