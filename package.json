@@ -1,0 +1,13 @@
+{
+  "name": "hive-exp",
+  "version": "0.1.0",
+  "private": true,
+  "devDependencies": {
+    "typescript": "^5.8.2"
+  },
+  "scripts": {
+    "build": "pnpm -r build",
+    "test": "pnpm -r test",
+    "typecheck": "tsc --noEmit"
+  }
+}

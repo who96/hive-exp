@@ -1,0 +1,289 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://hive-exp.dev/schema/experience.schema.json",
+  "title": "Experience Record v1.1.0",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^exp_\\d+_[a-f0-9]{8}$"
+    },
+    "type": {
+      "const": "experience"
+    },
+    "schema_version": {
+      "const": "1.1.0"
+    },
+    "signals": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "minItems": 1
+    },
+    "scope": {
+      "type": "string",
+      "enum": [
+        "project",
+        "language",
+        "universal"
+      ]
+    },
+    "preconditions": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "strategy": {
+      "$ref": "#/definitions/strategy"
+    },
+    "outcome": {
+      "$ref": "#/definitions/outcome"
+    },
+    "confidence": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    },
+    "source_agent": {
+      "type": "string",
+      "minLength": 1
+    },
+    "signature": {
+      "type": "string",
+      "pattern": "^(hmac-sha256|ed25519):.+$"
+    },
+    "validated_by": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "promoted": {
+      "type": "boolean"
+    },
+    "provisional": {
+      "type": "boolean"
+    },
+    "provisional_deadline": {
+      "anyOf": [
+        {
+          "type": "string",
+          "format": "date-time"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "supersedes": {
+      "$ref": "#/definitions/expIdOrNull"
+    },
+    "superseded_by": {
+      "$ref": "#/definitions/expIdOrNull"
+    },
+    "risk_level": {
+      "type": "string",
+      "enum": [
+        "low",
+        "medium",
+        "high"
+      ]
+    },
+    "created": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "last_confirmed": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "decay_halflife_days": {
+      "type": "number",
+      "minimum": 1
+    },
+    "archived": {
+      "type": "boolean"
+    },
+    "archived_reason": {
+      "enum": [
+        "zero_ref",
+        "low_confidence",
+        "consecutive_fail",
+        null
+      ]
+    }
+  },
+  "required": [
+    "id",
+    "type",
+    "schema_version",
+    "signals",
+    "scope",
+    "strategy",
+    "outcome",
+    "confidence",
+    "source_agent",
+    "signature",
+    "validated_by",
+    "promoted",
+    "provisional",
+    "provisional_deadline",
+    "supersedes",
+    "superseded_by",
+    "created",
+    "last_confirmed",
+    "decay_halflife_days",
+    "archived",
+    "archived_reason"
+  ],
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "provisional": {
+            "const": true
+          }
+        },
+        "required": [
+          "provisional"
+        ]
+      },
+      "then": {
+        "properties": {
+          "provisional_deadline": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "else": {
+        "properties": {
+          "provisional_deadline": {
+            "type": "null"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "archived": {
+            "const": true
+          }
+        },
+        "required": [
+          "archived"
+        ]
+      },
+      "then": {
+        "properties": {
+          "archived_reason": {
+            "type": "string",
+            "enum": [
+              "zero_ref",
+              "low_confidence",
+              "consecutive_fail"
+            ]
+          }
+        }
+      },
+      "else": {
+        "properties": {
+          "archived_reason": {
+            "type": "null"
+          }
+        }
+      }
+    }
+  ],
+  "definitions": {
+    "expIdOrNull": {
+      "anyOf": [
+        {
+          "type": "string",
+          "pattern": "^exp_\\d+_[a-f0-9]{8}$"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "strategy": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "type": "string",
+          "pattern": "^[a-z0-9]+(?:_[a-z0-9]+)*$"
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1
+        },
+        "category": {
+          "type": "string",
+          "enum": [
+            "repair",
+            "optimize",
+            "innovate"
+          ]
+        }
+      },
+      "required": [
+        "name",
+        "description",
+        "category"
+      ]
+    },
+    "blastRadius": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "files": {
+          "type": "number",
+          "minimum": 0
+        },
+        "lines": {
+          "type": "number",
+          "minimum": 0
+        }
+      },
+      "required": [
+        "files",
+        "lines"
+      ]
+    },
+    "outcome": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "status": {
+          "type": "string",
+          "enum": [
+            "success",
+            "failed",
+            "partial"
+          ]
+        },
+        "evidence": {
+          "type": "string"
+        },
+        "evidence_digest": {
+          "type": "string",
+          "pattern": "^sha256:[a-f0-9]+$"
+        },
+        "blast_radius": {
+          "$ref": "#/definitions/blastRadius"
+        }
+      },
+      "required": [
+        "status"
+      ]
+    }
+  }
+}
