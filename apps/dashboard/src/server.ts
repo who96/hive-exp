@@ -1,41 +1,34 @@
-import express, { type Express } from 'express';
-import path from 'node:path';
-import { fileURLToPath } from 'node:url';
+import express from 'express';
+import * as path from 'node:path';
+import * as url from 'node:url';
+import { createDashboardContext } from './context.js';
 import { apiRouter } from './api/index.js';
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const __dirname = path.dirname(url.fileURLToPath(import.meta.url));
 
-export function createApp(): Express {
+export function createApp(dataDir?: string) {
   const app = express();
   app.use(express.json());
 
-  // Serve static frontend files
-  app.use(express.static(path.join(__dirname, '..', 'public')));
+  const ctx = createDashboardContext(dataDir);
 
-  // API routes
-  app.use('/api', apiRouter());
+  app.use('/api', apiRouter(ctx));
 
-  // SPA fallback - serve index.html for all unmatched routes
-  // Express 5 requires named wildcard parameters
-  app.get('/{*path}', (_req, res) => {
-    res.sendFile(path.join(__dirname, '..', 'public', 'index.html'));
+  const publicDir = path.join(__dirname, '..', 'public');
+  app.use(express.static(publicDir));
+
+  app.get(/.*/, (_req, res) => {
+    res.sendFile(path.join(publicDir, 'index.html'));
   });
 
   return app;
 }
 
-// Only start server if run directly (not imported for tests)
-const isMainModule =
-  process.argv[1] &&
-  (process.argv[1].endsWith('server.ts') ||
-    process.argv[1].endsWith('server.js'));
-
-if (isMainModule) {
-  const PORT = 3721;
-  const HOST = '127.0.0.1';
-
+const isMain = process.argv[1] === url.fileURLToPath(import.meta.url);
+if (isMain) {
+  const port = process.env.PORT ?? 3000;
   const app = createApp();
-  app.listen(PORT, HOST, () => {
-    console.log(`hive-exp dashboard: http://${HOST}:${PORT}`);
+  app.listen(port, () => {
+    console.log(`Dashboard running on http://localhost:${port}`);
   });
 }

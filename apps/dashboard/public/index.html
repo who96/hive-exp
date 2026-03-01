@@ -1,64 +1,83 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>hive-exp Dashboard</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap"
-      rel="stylesheet"
-    />
-    <link rel="stylesheet" href="/styles.css" />
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
-    <script src="/main.js" defer></script>
+    <title>Hive Exp Dashboard</title>
+    <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
-    <nav>
-      <div class="container">
-        <div class="nav-brand">hive-exp</div>
-        <ul class="nav-tabs">
-          <li>
-            <a href="#tab-overview" class="nav-tab active" data-tab="tab-overview">Overview</a>
-          </li>
-          <li>
-            <a href="#tab-experiences" class="nav-tab" data-tab="tab-experiences">Experiences</a>
-          </li>
-          <li>
-            <a href="#tab-audit" class="nav-tab" data-tab="tab-audit">Audit Log</a>
-          </li>
-          <li>
-            <a href="#tab-stats" class="nav-tab" data-tab="tab-stats">Stats</a>
-          </li>
-        </ul>
+    <main class="app-shell">
+      <header class="page-header">
+        <h1>Hive Experience Dashboard</h1>
+        <p>Operational view of experiences, events, and moderation actions.</p>
+      </header>
+
+      <div class="tabs">
+        <button class="tab-btn active" data-tab="overview">Overview</button>
+        <button class="tab-btn" data-tab="experiences">Experiences</button>
+        <button class="tab-btn" data-tab="events">Audit Log</button>
+        <button class="tab-btn" data-tab="stats">Stats</button>
       </div>
-    </nav>
 
-    <main class="container">
-      <section id="tab-overview" class="tab-content active">
-        <h1>Overview</h1>
-        <p>Loading...</p>
+      <section id="overview" class="tab-pane active">
+        <div id="overview-content" class="stat-grid"></div>
+        <div class="agents-table">
+          <h2>Agents</h2>
+          <div id="agents-content"></div>
+        </div>
       </section>
 
-      <section id="tab-experiences" class="tab-content">
-        <h1>Experiences</h1>
-        <p>Loading...</p>
+      <section id="experiences" class="tab-pane">
+        <div class="filter-bar">
+          <label for="filter-status">Status</label>
+          <select id="filter-status">
+            <option value="">All</option>
+            <option value="provisional">Provisional</option>
+            <option value="promoted">Promoted</option>
+            <option value="archived">Archived</option>
+          </select>
+
+          <label for="filter-agent">Agent</label>
+          <input id="filter-agent" type="text" placeholder="agent-a" />
+
+          <label for="filter-limit">Limit</label>
+          <select id="filter-limit">
+            <option value="25">25</option>
+            <option value="50" selected>50</option>
+            <option value="100">100</option>
+          </select>
+
+          <button class="btn" onclick="loadExperiences()">Apply</button>
+        </div>
+        <div id="experiences-content"></div>
       </section>
 
-      <section id="tab-audit" class="tab-content">
-        <h1>Audit Log</h1>
-        <p>Loading...</p>
+      <section id="events" class="tab-pane">
+        <div class="filter-bar">
+          <label for="filter-event-type">Type</label>
+          <input id="filter-event-type" type="text" placeholder="experience.promoted" />
+
+          <label for="filter-since">Since</label>
+          <input id="filter-since" type="datetime-local" />
+
+          <label for="filter-event-limit">Limit</label>
+          <select id="filter-event-limit">
+            <option value="50">50</option>
+            <option value="100" selected>100</option>
+            <option value="200">200</option>
+          </select>
+
+          <button class="btn" onclick="loadEvents()">Apply</button>
+        </div>
+        <div id="events-content"></div>
       </section>
 
-      <section id="tab-stats" class="tab-content">
-        <h1>Stats</h1>
-        <p>Loading...</p>
+      <section id="stats" class="tab-pane" hidden>
+        <p>Stats tab is coming soon.</p>
       </section>
     </main>
 
-    <footer>
-      <div class="container">hive-exp Dashboard v0.1.0</div>
-    </footer>
+    <script src="main.js"></script>
   </body>
 </html>

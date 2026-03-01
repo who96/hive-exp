@@ -1,97 +1,179 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
-import http from 'node:http';
+import request from 'supertest';
+import * as fs from 'node:fs';
+import * as path from 'node:path';
+import * as os from 'node:os';
 import { createApp } from '../src/server.js';
 
-describe('dashboard api', () => {
-  const loadedTabs = new Set<number>();
-  let server: http.Server | null = null;
-  let port = 0;
+let app: ReturnType<typeof createApp>;
+let tmpDir: string;
 
-  const endpoints = [
-    '/api/health',
-    '/api/overview',
-    '/api/experiences',
-    '/api/stats',
-    '/api/events',
-    '/api/experience/test-id',
-  ];
+const makeExp = (
+  id: string,
+  status: 'provisional' | 'promoted' | 'archived',
+  agent: string,
+  extra: Record<string, unknown> = {},
+) => ({
+  id,
+  type: 'experience',
+  schema_version: '1.1.0',
+  signals: ['tsc_error'],
+  scope: 'universal',
+  strategy: { name: 'fix_imports', description: 'Fix import paths', category: 'repair' },
+  outcome: { status: 'success' },
+  confidence: 0.8,
+  source_agent: agent,
+  signature: 'hmac-sha256:test',
+  validated_by: null,
+  promoted: status === 'promoted',
+  provisional: status === 'provisional',
+  provisional_deadline: null,
+  supersedes: null,
+  superseded_by: null,
+  created: new Date().toISOString(),
+  last_confirmed: new Date().toISOString(),
+  decay_halflife_days: 30,
+  archived: status === 'archived',
+  archived_reason: status === 'archived' ? 'consecutive_fail' : null,
+  ...extra,
+});
 
-  async function request(path: string): Promise<Record<string, unknown>> {
-    const response = await fetch(`http://127.0.0.1:${port}${path}`);
-    const data = await response.json();
-    return data;
-  }
+beforeAll(async () => {
+  tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'dashboard-test-'));
+  const dirs = ['experiences/provisional', 'experiences/promoted', 'experiences/archived', 'events', 'db'];
+  for (const d of dirs) fs.mkdirSync(path.join(tmpDir, d), { recursive: true });
 
-  beforeAll(async () => {
-    const app = createApp();
-    server = http.createServer(app);
+  fs.writeFileSync(
+    path.join(tmpDir, 'experiences/provisional/exp_001.json'),
+    JSON.stringify(makeExp('exp_001', 'provisional', 'agent-a')),
+  );
+  fs.writeFileSync(
+    path.join(tmpDir, 'experiences/provisional/exp_002.json'),
+    JSON.stringify(makeExp('exp_002', 'provisional', 'agent-b', { pending_promotion: true })),
+  );
+  fs.writeFileSync(
+    path.join(tmpDir, 'experiences/promoted/exp_003.json'),
+    JSON.stringify(makeExp('exp_003', 'promoted', 'agent-a')),
+  );
+  fs.writeFileSync(
+    path.join(tmpDir, 'experiences/archived/exp_004.json'),
+    JSON.stringify(makeExp('exp_004', 'archived', 'agent-c')),
+  );
 
-    await new Promise<void>((resolve, reject) => {
-      server?.on('error', reject);
-      server?.listen(0, '127.0.0.1', () => {
-        const address = server?.address();
-        if (address && typeof address === 'object') {
-          port = address.port;
-          resolve();
-        } else {
-          reject(new Error('Unable to determine server port'));
-        }
-      });
-    });
+  const now = new Date();
+  const yyyy = now.getFullYear();
+  const mm = String(now.getMonth() + 1).padStart(2, '0');
+  const eventLine =
+    JSON.stringify({
+      event_id: 'evt_001',
+      type: 'experience.created',
+      timestamp: new Date().toISOString(),
+      source_agent: 'agent-a',
+      signature: 'hmac-sha256:test',
+      payload: { exp_id: 'exp_001', initial_confidence: 0.8 },
+    }) + '\n';
+  fs.writeFileSync(path.join(tmpDir, `events/events-${yyyy}-${mm}.jsonl`), eventLine);
+
+  app = createApp(tmpDir);
+});
+
+afterAll(() => {
+  fs.rmSync(tmpDir, { recursive: true, force: true });
+});
+
+describe('Health', () => {
+  it('returns version', async () => {
+    const res = await request(app).get('/api/health');
+    expect(res.status).toBe(200);
+    expect(res.body.status).toBe('ok');
+    expect(res.body.version).toBeDefined();
+  });
+});
+
+describe('Overview', () => {
+  it('returns correct counts', async () => {
+    const res = await request(app).get('/api/overview');
+    expect(res.status).toBe(200);
+    expect(res.body.status).toBe('ok');
+    const d = res.body.data;
+    expect(d.provisional_count).toBe(2);
+    expect(d.promoted_count).toBe(1);
+    expect(d.archived_count).toBe(1);
+    expect(d.total_experiences).toBe(4);
   });
 
-  afterAll(async () => {
-    if (!server) {
-      return;
-    }
-    await new Promise<void>((resolve, reject) => {
-      server?.close((error) => {
-        if (error) {
-          reject(error);
-          return;
-        }
-        resolve();
-      });
-    });
+  it('returns pending_review count', async () => {
+    const res = await request(app).get('/api/overview');
+    expect(res.body.data.pending_review).toBe(1);
   });
 
-  it('GET /api/health returns version', async () => {
-    const data = await request('/api/health');
-    expect(data).toEqual({ status: 'ok', version: '0.1.0' });
+  it('returns agents', async () => {
+    const res = await request(app).get('/api/overview');
+    const agents = res.body.data.agents;
+    expect(Array.isArray(agents)).toBe(true);
+    expect(agents.length).toBeGreaterThan(0);
+  });
+});
+
+describe('Experiences', () => {
+  it('list returns all', async () => {
+    const res = await request(app).get('/api/experiences');
+    expect(res.status).toBe(200);
+    expect(res.body.data.total).toBe(4);
   });
 
-  it('GET /api/overview returns ok', async () => {
-    const data = await request('/api/overview');
-    expect(data.status).toBe('ok');
+  it('filter by status=provisional', async () => {
+    const res = await request(app).get('/api/experiences?status=provisional');
+    expect(res.body.data.items.length).toBe(2);
+    expect(res.body.data.items.every((r: { _status: string }) => r._status === 'provisional')).toBe(true);
   });
 
-  it('GET /api/experiences returns ok', async () => {
-    const data = await request('/api/experiences');
-    expect(data.status).toBe('ok');
+  it('filter by agent', async () => {
+    const res = await request(app).get('/api/experiences?agent=agent-a');
+    expect(res.body.data.items.every((r: { source_agent: string }) => r.source_agent === 'agent-a')).toBe(true);
   });
 
-  it('GET /api/stats returns ok', async () => {
-    const data = await request('/api/stats');
-    expect(data.status).toBe('ok');
+  it('get by id returns detail', async () => {
+    const res = await request(app).get('/api/experience/exp_001');
+    expect(res.status).toBe(200);
+    expect(res.body.data.id).toBe('exp_001');
   });
 
-  it('GET /api/events returns ok', async () => {
-    const data = await request('/api/events');
-    expect(data.status).toBe('ok');
+  it('get by id 404 for missing', async () => {
+    const res = await request(app).get('/api/experience/nonexistent_id');
+    expect(res.status).toBe(404);
   });
 
-  it('GET /api/experience/test-id returns ok', async () => {
-    const data = await request('/api/experience/test-id');
-    expect(data.status).toBe('ok');
+  it('promote sets pending_promotion', async () => {
+    const res = await request(app).post('/api/experience/exp_001/promote');
+    expect(res.status).toBe(200);
+    expect(res.body.data.pending_promotion).toBe(true);
+    const raw = fs.readFileSync(path.join(tmpDir, 'experiences/provisional/exp_001.json'), 'utf-8');
+    const rec = JSON.parse(raw);
+    expect(rec.pending_promotion).toBe(true);
   });
 
-  it('all dashboard routes are registered', async () => {
-    for (const endpoint of endpoints) {
-      const response = await fetch(`http://127.0.0.1:${port}${endpoint}`);
-      expect(response.status).not.toBe(404);
-      loadedTabs.add(response.status);
-    }
+  it('quarantine moves file and writes event', async () => {
+    const res = await request(app).post('/api/experience/exp_003/quarantine');
+    expect(res.status).toBe(200);
+    expect(res.body.data.archived).toBe(true);
+    expect(fs.existsSync(path.join(tmpDir, 'experiences/archived/exp_003.json'))).toBe(true);
+    expect(fs.existsSync(path.join(tmpDir, 'experiences/promoted/exp_003.json'))).toBe(false);
+  });
+});
 
-    expect(loadedTabs.size).toBeGreaterThan(0);
+describe('Events', () => {
+  it('list returns events', async () => {
+    const res = await request(app).get('/api/events');
+    expect(res.status).toBe(200);
+    expect(res.body.status).toBe('ok');
+    expect(Array.isArray(res.body.data.items)).toBe(true);
+  });
+
+  it('filter by type returns only matching events', async () => {
+    const res = await request(app).get('/api/events?type=experience.created');
+    expect(res.status).toBe(200);
+    const items = res.body.data.items;
+    expect(items.every((e: { type: string }) => e.type === 'experience.created')).toBe(true);
   });
 });
