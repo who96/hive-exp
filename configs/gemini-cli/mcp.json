@@ -1,0 +1,10 @@
+{
+  "mcpServers": {
+    "hive-exp": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "@hive-exp/mcp"],
+      "env": {}
+    }
+  }
+}

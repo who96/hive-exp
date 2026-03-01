@@ -1,0 +1,4 @@
+[mcp_servers.hive-exp]
+type = "stdio"
+command = "npx"
+args = ["-y", "@hive-exp/mcp"]

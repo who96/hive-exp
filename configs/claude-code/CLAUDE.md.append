@@ -1,0 +1,20 @@
+## hive-exp Experience System
+
+When hive-exp MCP Server is configured:
+
+### When to query (hive_exp_query)
+- When encountering build/test/lint errors that aren't obvious typos
+- When receiving [hive-exp] hook reminders
+- When unsure about a fix strategy
+
+### When to record (hive_exp_record)
+- After successfully solving a non-trivial problem with reusable strategy
+- Do NOT record: typo fixes, project-specific config, sensitive info
+
+### When to report outcome (hive_exp_outcome)
+- After applying a queried strategy, always record the result (success/failed/partial)
+- This is the core quality signal — please always report
+
+### Signal naming
+- Use canonical signal names from signal-conventions.yaml
+- When unsure, check hive_exp_stats(type: "overview") for the signal list

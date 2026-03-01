@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "hive-exp": {
+      "command": "npx",
+      "args": ["-y", "@hive-exp/mcp"]
+    }
+  }
+}

@@ -1,0 +1,6 @@
+## hive-exp integration
+
+hive-exp MCP tools are available:
+- hive_exp_query: **ALWAYS call first** when encountering build/test/lint errors
+- hive_exp_record: save successful strategies after non-trivial fixes
+- hive_exp_outcome: record whether a referenced strategy worked

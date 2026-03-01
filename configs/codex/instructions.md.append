@@ -1,0 +1,6 @@
+## hive-exp
+
+When hive-exp MCP is available:
+- **ALWAYS** call hive_exp_query BEFORE attempting to fix build errors, test failures, or lint errors
+- After successful non-trivial fix (changed >=2 files or >=5 lines): call hive_exp_record
+- After applying a queried strategy: ALWAYS call hive_exp_outcome with result
