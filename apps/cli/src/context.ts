@@ -1,0 +1,86 @@
+import {
+  EventWriter,
+  EventReader,
+  EventProjector,
+  StatsAggregator,
+  createSigner,
+} from '@hive-exp/core';
+import type { SignerInterface } from '@hive-exp/core';
+import * as fs from 'node:fs';
+import * as path from 'node:path';
+import * as os from 'node:os';
+import * as crypto from 'node:crypto';
+
+export interface CliContext {
+  dataDir: string;
+  experiencesDir: string;
+  provisionalDir: string;
+  promotedDir: string;
+  archivedDir: string;
+  eventsDir: string;
+  dbPath: string;
+  eventWriter: EventWriter;
+  eventReader: EventReader;
+  projector: EventProjector;
+  aggregator: StatsAggregator;
+  signer: SignerInterface;
+}
+
+export function resolveDataDir(): string {
+  return process.env.HIVE_EXP_HOME ?? path.join(os.homedir(), '.hive-exp');
+}
+
+export function ensureDataDir(root: string): void {
+  const dirs = [
+    path.join(root, 'experiences', 'provisional'),
+    path.join(root, 'experiences', 'promoted'),
+    path.join(root, 'experiences', 'archived'),
+    path.join(root, 'events'),
+    path.join(root, 'db'),
+    path.join(root, 'graph'),
+  ];
+  for (const d of dirs) {
+    fs.mkdirSync(d, { recursive: true });
+  }
+}
+
+export function createContext(dataDir?: string): CliContext {
+  const root = dataDir ?? resolveDataDir();
+  ensureDataDir(root);
+
+  const experiencesDir = path.join(root, 'experiences');
+  const provisionalDir = path.join(root, 'experiences', 'provisional');
+  const promotedDir = path.join(root, 'experiences', 'promoted');
+  const archivedDir = path.join(root, 'experiences', 'archived');
+  const eventsDir = path.join(root, 'events');
+  const dbPath = path.join(root, 'db', 'projection.db');
+
+  const secret =
+    process.env.HIVE_EXP_SECRET ??
+    crypto
+      .createHash('sha256')
+      .update(`${os.hostname()}-${os.userInfo().username}-hive-exp`)
+      .digest('hex');
+
+  const eventWriter = new EventWriter({ eventsDir });
+  const eventReader = new EventReader({ eventsDir });
+  const projector = new EventProjector({ dbPath, eventsDir });
+  projector.initialize();
+  const aggregator = new StatsAggregator({ dbPath });
+  const signer = createSigner({ algorithm: 'hmac-sha256', secret });
+
+  return {
+    dataDir: root,
+    experiencesDir,
+    provisionalDir,
+    promotedDir,
+    archivedDir,
+    eventsDir,
+    dbPath,
+    eventWriter,
+    eventReader,
+    projector,
+    aggregator,
+    signer,
+  };
+}
