@@ -1,0 +1,71 @@
+# Signal Conventions for hive-exp
+# Loaded by signal-detector.py at runtime
+signals:
+  - name: tsc_error
+    category: build
+    detect_pattern: "error TS\\d+"
+    aliases: [typescript_error, ts_error]
+  - name: build_failed
+    category: build
+    detect_pattern: "Build failed|ELIFECYCLE|npm ERR!"
+    aliases: [build_error, compilation_failed]
+  - name: build_warning
+    category: build
+    detect_pattern: "WARNING|warn\\s*-"
+    aliases: [compiler_warning]
+  - name: module_not_found
+    category: module
+    detect_pattern: "Cannot find module|Module not found|ERR_MODULE_NOT_FOUND"
+    aliases: [import_error, require_error]
+  - name: module_resolution_error
+    category: module
+    detect_pattern: "Could not resolve|Unable to resolve"
+    aliases: [resolve_error]
+  - name: circular_dependency
+    category: module
+    detect_pattern: "Circular dependency|cycle detected"
+    aliases: [circular_import]
+  - name: test_failed
+    category: test
+    detect_pattern: "FAIL\\s+.*\\.test\\.|Tests:\\s+\\d+\\s+failed"
+    aliases: [test_error, test_failure]
+  - name: test_timeout
+    category: test
+    detect_pattern: "Timeout|timed out|exceeded timeout"
+    aliases: [test_hung]
+  - name: assertion_error
+    category: test
+    detect_pattern: "AssertionError|expect\\(.*\\)\\.to"
+    aliases: [assert_failed]
+  - name: lint_error
+    category: lint
+    detect_pattern: "eslint.*error|\\d+ errors?\\s+\\d+ warnings?"
+    aliases: [eslint_error]
+  - name: lint_warning
+    category: lint
+    detect_pattern: "eslint.*warning"
+    aliases: [eslint_warning]
+  - name: runtime_error
+    category: runtime
+    detect_pattern: "TypeError|ReferenceError|RangeError|SyntaxError"
+    aliases: [js_error, javascript_error]
+  - name: segfault
+    category: runtime
+    detect_pattern: "Segmentation fault|SIGSEGV"
+    aliases: [crash, core_dump]
+  - name: oom
+    category: runtime
+    detect_pattern: "FATAL ERROR.*heap|JavaScript heap out of memory|ENOMEM"
+    aliases: [out_of_memory, heap_overflow]
+  - name: permission_denied
+    category: security
+    detect_pattern: "EACCES|Permission denied|EPERM"
+    aliases: [access_denied]
+  - name: config_invalid
+    category: config
+    detect_pattern: "Invalid configuration|Config error|ENOENT.*config"
+    aliases: [config_error]
+  - name: dependency_conflict
+    category: config
+    detect_pattern: "ERESOLVE|peer dep|conflicting peer"
+    aliases: [version_conflict, peer_dependency]
