@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Hive Exp Dashboard</title>
     <link rel="stylesheet" href="styles.css" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
   </head>
   <body>
     <main class="app-shell">
@@ -73,8 +74,18 @@
         <div id="events-content"></div>
       </section>
 
-      <section id="stats" class="tab-pane" hidden>
-        <p>Stats tab is coming soon.</p>
+      <section id="stats" class="tab-pane">
+        <h1>Strategy Statistics</h1>
+        <div class="stats-charts">
+          <div class="chart-container"><canvas id="chart-ranking"></canvas></div>
+          <div class="chart-container"><canvas id="chart-confidence"></canvas></div>
+        </div>
+        <h2>Strategy Leaderboard</h2>
+        <div id="stats-leaderboard"></div>
+        <h2>At-Risk Experiences</h2>
+        <div id="stats-at-risk"></div>
+        <h2>Agent Contributions</h2>
+        <div id="stats-agents"></div>
       </section>
     </main>
 

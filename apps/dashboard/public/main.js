@@ -18,6 +18,7 @@ async function loadTab(tab) {
   if (tab === 'overview') loadOverview();
   else if (tab === 'experiences') loadExperiences();
   else if (tab === 'events') loadEvents();
+  else if (tab === 'stats') loadStats();
 }
 
 // Overview
@@ -113,6 +114,127 @@ async function loadEvents() {
       <div class="event-payload">${JSON.stringify(e.payload, null, 2)}</div>
     </li>`).join('')}
   </ul>`;
+}
+
+// Stats
+let _chartRanking = null;
+let _chartConfidence = null;
+
+async function loadStats() {
+  const resp = await fetchApi('/stats');
+  if (resp.status !== 'ok') return;
+  const d = resp.data;
+
+  // --- Bar chart: strategy ranking ---
+  const rankingCanvas = document.getElementById('chart-ranking');
+  if (rankingCanvas) {
+    if (_chartRanking) _chartRanking.destroy();
+    const labels = (d.strategy_ranking || []).map(s => s.strategy_name);
+    const values = (d.strategy_ranking || []).map(s => +(s.success_rate * 100).toFixed(1));
+    _chartRanking = new Chart(rankingCanvas, {
+      type: 'bar',
+      data: {
+        labels,
+        datasets: [{
+          label: 'Success Rate (%)',
+          data: values,
+          backgroundColor: 'rgba(0,212,170,0.7)',
+          borderColor: '#00d4aa',
+          borderWidth: 1,
+        }],
+      },
+      options: {
+        responsive: true,
+        plugins: { legend: { labels: { color: '#e0e0e0' } } },
+        scales: {
+          x: { ticks: { color: '#888' }, grid: { color: '#0f3460' } },
+          y: { min: 0, max: 100, ticks: { color: '#888' }, grid: { color: '#0f3460' } },
+        },
+      },
+    });
+  }
+
+  // --- Doughnut chart: confidence distribution ---
+  const confCanvas = document.getElementById('chart-confidence');
+  if (confCanvas) {
+    if (_chartConfidence) _chartConfidence.destroy();
+    const dist = d.confidence_distribution || { high: 0, medium: 0, low: 0 };
+    _chartConfidence = new Chart(confCanvas, {
+      type: 'doughnut',
+      data: {
+        labels: ['High (≥0.7)', 'Medium (0.3–0.7)', 'Low (<0.3)'],
+        datasets: [{
+          data: [dist.high, dist.medium, dist.low],
+          backgroundColor: ['#00d4aa', '#ffdd57', '#ff6b6b'],
+          borderColor: '#16213e',
+          borderWidth: 2,
+        }],
+      },
+      options: {
+        responsive: true,
+        plugins: { legend: { labels: { color: '#e0e0e0' } } },
+      },
+    });
+  }
+
+  // --- Strategy leaderboard table ---
+  const leaderboardEl = document.getElementById('stats-leaderboard');
+  if (leaderboardEl) {
+    const rows = (d.strategy_ranking || []);
+    if (rows.length === 0) {
+      leaderboardEl.innerHTML = '<p>No data</p>';
+    } else {
+      leaderboardEl.innerHTML = `<table class="table">
+        <thead><tr><th>Strategy</th><th>Ref Count</th><th>Success Rate</th><th>Avg Confidence</th></tr></thead>
+        <tbody>
+          ${rows.map(r => `<tr>
+            <td>${r.strategy_name}</td>
+            <td>${r.ref_count}</td>
+            <td>${(r.success_rate * 100).toFixed(1)}%</td>
+            <td>${(r.avg_confidence * 100).toFixed(1)}%</td>
+          </tr>`).join('')}
+        </tbody>
+      </table>`;
+    }
+  }
+
+  // --- At-risk list ---
+  const atRiskEl = document.getElementById('stats-at-risk');
+  if (atRiskEl) {
+    const risks = d.at_risk || [];
+    if (risks.length === 0) {
+      atRiskEl.innerHTML = '<p>No at-risk experiences found.</p>';
+    } else {
+      atRiskEl.innerHTML = `<table class="table">
+        <thead><tr><th>ID</th><th>Signals</th><th>Strategy</th><th>Confidence</th><th>Risk Reason</th></tr></thead>
+        <tbody>
+          ${risks.map(r => `<tr class="at-risk">
+            <td>${r.exp_id}</td>
+            <td>${(r.signals || []).join(', ')}</td>
+            <td>${r.strategy_name}</td>
+            <td>${(r.confidence * 100).toFixed(1)}%</td>
+            <td>${r.risk_reason}</td>
+          </tr>`).join('')}
+        </tbody>
+      </table>`;
+    }
+  }
+
+  // --- Agent contributions ---
+  const agentsEl = document.getElementById('stats-agents');
+  if (agentsEl) {
+    const agents = d.agent_contribution || [];
+    if (agents.length === 0) {
+      agentsEl.innerHTML = '<p>No data</p>';
+    } else {
+      agentsEl.innerHTML = `<table class="table">
+        <thead><tr><th>Agent</th><th>Count</th></tr></thead>
+        <tbody>
+          ${agents.map(a => `<tr><td>${a.agent}</td><td>${a.count}</td></tr>`).join('')}
+        </tbody>
+      </table>`;
+    }
+  }
 }
 
 loadTab('overview');

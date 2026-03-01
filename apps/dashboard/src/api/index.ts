@@ -3,6 +3,7 @@ import type { DashboardContext } from '../context.js';
 import { overviewRouter } from './overview.js';
 import { experiencesRouter } from './experiences.js';
 import { eventsRouter } from './events.js';
+import { statsRouter } from './stats.js';
 
 export function apiRouter(ctx: DashboardContext) {
   const router = Router();
@@ -14,6 +15,7 @@ export function apiRouter(ctx: DashboardContext) {
   router.use(overviewRouter(ctx));
   router.use(experiencesRouter(ctx));
   router.use(eventsRouter(ctx));
+  router.use(statsRouter(ctx));
 
   return router;
 }

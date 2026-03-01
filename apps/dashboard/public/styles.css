@@ -223,3 +223,31 @@ body {
 .agents-table {
   margin-top: 1rem;
 }
+
+/* Stats tab */
+.stats-charts {
+  display: flex;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+  margin-bottom: 1.5rem;
+}
+
+.chart-container {
+  flex: 1 1 300px;
+  min-width: 280px;
+  max-width: 520px;
+  background: var(--bg2);
+  border: 1px solid var(--bg3);
+  border-radius: 8px;
+  padding: 1rem;
+}
+
+.chart-container canvas {
+  width: 100% !important;
+}
+
+tr.at-risk td {
+  background: rgba(255, 107, 107, 0.08);
+  border-bottom: 1px solid rgba(255, 107, 107, 0.3);
+  color: #ff9f9f;
+}

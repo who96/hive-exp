@@ -177,3 +177,60 @@ describe('Events', () => {
     expect(items.every((e: { type: string }) => e.type === 'experience.created')).toBe(true);
   });
 });
+
+describe('Stats', () => {
+  it('returns strategy_ranking array', async () => {
+    const res = await request(app).get('/api/stats');
+    expect(res.status).toBe(200);
+    expect(res.body.status).toBe('ok');
+    expect(Array.isArray(res.body.data.strategy_ranking)).toBe(true);
+    const first = res.body.data.strategy_ranking[0];
+    expect(first).toHaveProperty('strategy_name');
+    expect(first).toHaveProperty('ref_count');
+    expect(first).toHaveProperty('success_rate');
+    expect(first).toHaveProperty('avg_confidence');
+  });
+
+  it('returns confidence_distribution with high/medium/low keys', async () => {
+    const res = await request(app).get('/api/stats');
+    expect(res.status).toBe(200);
+    const dist = res.body.data.confidence_distribution;
+    expect(dist).toHaveProperty('high');
+    expect(dist).toHaveProperty('medium');
+    expect(dist).toHaveProperty('low');
+    expect(typeof dist.high).toBe('number');
+    expect(typeof dist.medium).toBe('number');
+    expect(typeof dist.low).toBe('number');
+    expect(dist.high + dist.medium + dist.low).toBeGreaterThanOrEqual(2);
+  });
+
+  it('returns agent_contribution array', async () => {
+    const res = await request(app).get('/api/stats');
+    expect(res.status).toBe(200);
+    const agents = res.body.data.agent_contribution;
+    expect(Array.isArray(agents)).toBe(true);
+    expect(agents.length).toBeGreaterThan(0);
+    expect(agents[0]).toHaveProperty('agent');
+    expect(agents[0]).toHaveProperty('count');
+  });
+
+  it('returns at_risk array for low-confidence experiences', async () => {
+    // Write a low-confidence experience
+    const lowConf = makeExp('exp_low', 'provisional', 'agent-risk', {
+      confidence: 0.05,
+      last_confirmed: new Date(Date.now() - 60 * 24 * 60 * 60 * 1000).toISOString(),
+    });
+    fs.writeFileSync(
+      path.join(tmpDir, 'experiences/provisional/exp_low.json'),
+      JSON.stringify(lowConf),
+    );
+
+    const res = await request(app).get('/api/stats');
+    expect(res.status).toBe(200);
+    const atRisk = res.body.data.at_risk;
+    expect(Array.isArray(atRisk)).toBe(true);
+    const found = atRisk.find((r: { exp_id: string }) => r.exp_id === 'exp_low');
+    expect(found).toBeDefined();
+    expect(found.risk_reason).toBe('low_confidence');
+  });
+});
