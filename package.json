@@ -3,11 +3,13 @@
   "version": "0.1.0",
   "private": true,
   "devDependencies": {
-    "typescript": "^5.8.2"
+    "typescript": "^5.8.2",
+    "vitest": "^3.2.4"
   },
   "scripts": {
     "build": "pnpm -r build",
     "test": "pnpm -r test",
+    "test:integration": "vitest run -c vitest.config.ts",
     "typecheck": "tsc --noEmit"
   }
 }
