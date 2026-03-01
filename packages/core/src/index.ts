@@ -28,3 +28,6 @@ export * from './stats/aggregator.js';
 // Lifecycle
 export * from './lifecycle.js';
 export * from './cron.js';
+
+// Consensus
+export { ConsensusDetector, type ConsensusResult, type ConsensusDetectorOptions } from './consensus.js';
