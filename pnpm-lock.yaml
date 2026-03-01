@@ -118,6 +118,22 @@ importers:
         specifier: ^3.2.4
         version: 3.2.4(@types/node@22.19.13)(tsx@4.21.0)
 
+  packages/signer-ed25519:
+    dependencies:
+      '@hive-exp/core':
+        specifier: workspace:*
+        version: link:../core
+    devDependencies:
+      tsup:
+        specifier: ^8.5.1
+        version: 8.5.1(postcss@8.5.6)(typescript@5.9.3)
+      typescript:
+        specifier: ^5.9.3
+        version: 5.9.3
+      vitest:
+        specifier: ^3.2.4
+        version: 3.2.4(@types/node@22.19.13)
+
 packages:
 
   '@ampproject/remapping@2.3.0':
