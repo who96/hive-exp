@@ -10,6 +10,29 @@
       "types": "./dist/index.d.ts"
     }
   },
+  "files": [
+    "dist",
+    "src"
+  ],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/who96/hive-exp.git"
+  },
+  "homepage": "https://github.com/who96/hive-exp#readme",
+  "bugs": {
+    "url": "https://github.com/who96/hive-exp/issues"
+  },
+  "keywords": [
+    "ai",
+    "agent",
+    "experience",
+    "mcp",
+    "knowledge-management"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
   "scripts": {
     "build": "tsup",
     "test": "vitest run"
