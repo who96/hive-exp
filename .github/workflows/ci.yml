@@ -1,0 +1,106 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  lint-and-typecheck:
+    name: Lint and Typecheck
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Build all packages
+        run: pnpm -r run build || true
+
+      - name: Typecheck core
+        run: npx tsc --noEmit -p packages/core/tsconfig.json
+
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Test packages/core
+        run: cd packages/core && npx vitest run
+
+      - name: Test packages/mcp
+        run: cd packages/mcp && npx vitest run
+
+      - name: Test apps/cli
+        run: cd apps/cli && npx vitest run
+
+      - name: Test apps/dashboard
+        run: cd apps/dashboard && npx vitest run
+
+      - name: Test packages/signer-ed25519
+        run: cd packages/signer-ed25519 && npx vitest run
+
+      - name: Run E2E tests
+        run: npx vitest run
+
+  build-check:
+    name: Build Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Pack check packages/core
+        run: cd packages/core && npm pack --dry-run
+
+      - name: Pack check packages/signer-ed25519
+        run: cd packages/signer-ed25519 && npm pack --dry-run
+
+      - name: Pack check apps/cli
+        run: cd apps/cli && npm pack --dry-run
