@@ -242,8 +242,89 @@ describe('hive-exp CLI', () => {
     writeFileSync(join(ctx.provisionalDir, secondFile), `${JSON.stringify(oldRecord, null, 2)}\n`);
 
     const out = await runCommand(['export', '--min-confidence', '0.4']);
-    const parsed = JSON.parse(out.output) as Array<{ id: string }>;
-    expect(parsed.every((item) => item.id !== secondId!)).toBe(true);
-    expect(parsed.some((item) => item.id === firstId!)).toBe(true);
+    const parsed = JSON.parse(out.output) as { experiences: Array<{ id: string }> };
+    expect(parsed.experiences.every((item) => item.id !== secondId!)).toBe(true);
+    expect(parsed.experiences.some((item) => item.id === firstId!)).toBe(true);
+  });
+
+  it('export --format json produces valid JSON with envelope', async () => {
+    await runCommand(['add', '--signals', 'env_signal', '--strategy', 'env_strat']);
+    const out = await runCommand(['export', '--format', 'json']);
+    const parsed = JSON.parse(out.output) as {
+      exported_at: string;
+      filter: object;
+      count: number;
+      experiences: unknown[];
+    };
+    expect(typeof parsed.exported_at).toBe('string');
+    expect(typeof parsed.filter).toBe('object');
+    expect(typeof parsed.count).toBe('number');
+    expect(Array.isArray(parsed.experiences)).toBe(true);
+    expect(parsed.count).toBe(parsed.experiences.length);
+  });
+
+  it('export --promoted-only only includes promoted experiences', async () => {
+    const addResult = await runCommand(['add', '--signals', 'promo_sig', '--strategy', 'promo_strat']);
+    const expId = addResult.output.match(/exp_\d+_[a-f0-9]{8}/)?.[0];
+    expect(expId).toBeTruthy();
+
+    // Before promotion: promoted-only export should be empty
+    const beforeOut = await runCommand(['export', '--promoted-only']);
+    const before = JSON.parse(beforeOut.output) as { experiences: Array<{ id: string }> };
+    expect(before.experiences.every((item) => item.id !== expId!)).toBe(true);
+
+    // Promote the experience
+    await runCommand(['promote', expId!, '--confirm']);
+
+    // After promotion: promoted-only export should include it
+    const afterOut = await runCommand(['export', '--promoted-only']);
+    const after = JSON.parse(afterOut.output) as { experiences: Array<{ id: string }> };
+    expect(after.experiences.some((item) => item.id === expId!)).toBe(true);
+  });
+
+  it('export --scope filters by scope', async () => {
+    // Default scope from add is 'universal'
+    await runCommand(['add', '--signals', 'scope_sig', '--strategy', 'scope_strat']);
+
+    const universalOut = await runCommand(['export', '--scope', 'universal']);
+    const universalParsed = JSON.parse(universalOut.output) as {
+      experiences: Array<{ id: string; scope: string }>;
+    };
+    expect(universalParsed.experiences.every((item) => item.scope === 'universal')).toBe(true);
+    expect(universalParsed.experiences.length).toBeGreaterThan(0);
+
+    const projectOut = await runCommand(['export', '--scope', 'project']);
+    const projectParsed = JSON.parse(projectOut.output) as {
+      experiences: Array<{ scope: string }>;
+    };
+    expect(projectParsed.experiences.length).toBe(0);
+  });
+
+  it('export includes stats enrichment fields', async () => {
+    await runCommand(['add', '--signals', 'stats_sig', '--strategy', 'stats_strat']);
+    const out = await runCommand(['export']);
+    const parsed = JSON.parse(out.output) as {
+      experiences: Array<{
+        id: string;
+        signals: string[];
+        strategy: { name: string; description: string };
+        confidence: number;
+        source_agent: string;
+        scope: string;
+        risk_level: string;
+        stats: { ref_count: number; success_rate: number | null };
+      }>;
+    };
+    expect(parsed.experiences.length).toBeGreaterThan(0);
+    const exp = parsed.experiences[0]!;
+    expect(Array.isArray(exp.signals)).toBe(true);
+    expect(typeof exp.strategy.name).toBe('string');
+    expect(typeof exp.confidence).toBe('number');
+    expect(typeof exp.source_agent).toBe('string');
+    expect(typeof exp.scope).toBe('string');
+    expect(typeof exp.risk_level).toBe('string');
+    expect(typeof exp.stats.ref_count).toBe('number');
+    // success_rate is null when no outcomes recorded yet
+    expect(exp.stats.success_rate === null || typeof exp.stats.success_rate === 'number').toBe(true);
   });
 });
