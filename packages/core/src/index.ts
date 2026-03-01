@@ -24,3 +24,7 @@ export { MemoryGraphQuery, type MemoryGraphQueryOptions, type QueryFilter } from
 // Stats
 export * from './stats/decay.js';
 export * from './stats/aggregator.js';
+
+// Lifecycle
+export * from './lifecycle.js';
+export * from './cron.js';
