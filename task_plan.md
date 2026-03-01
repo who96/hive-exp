@@ -1,98 +1,112 @@
-# Phase 0.5: @hive-exp/core Implementation Plan
+# Phase 1→3 Implementation Plan
 
-## Goal
-Implement the core library (`@hive-exp/core`) with 7 modules, forming the foundation for the MCP Server (Phase 1) and CLI.
+> Phase 0.5 (@hive-exp/core) — COMPLETE (148 tests, 1610 LOC)
+> Phase 1 starts from commit f9f74b1 on main
 
-## Design References
-- `docs/review-convergence-report.md` — §4.1-§4.7
-- `docs/agent-integration-design.md` — §2 MCP Tool schemas
+## Architecture
 
-## Phases
+```
+Controller (Opus 4.6)           Workers (Sonnet via Agent tool)
+  Plan → Dispatch → Verify        Implement in isolated worktrees
+        → Merge to main           Self-test before reporting back
+```
 
-### Phase 1: Project Scaffolding + Types + Schema [status: pending]
-- Initialize monorepo: pnpm workspace, tsconfig, vitest, tsup
-- `packages/core/src/types/index.ts` — All TypeScript types
-- `packages/core/src/schema/experience.schema.json` — JSON Schema for experience record v1.1.0
-- `packages/core/src/schema/event.schema.json` — JSON Schema for event envelope + 11 event types
-- `packages/core/src/schema/validator.ts` — Schema validation functions
-- `packages/core/src/schema/signal-conventions.ts` — 15+ signal convention names + normalization
-- Tests: `schema.test.ts`
+---
 
-**Files**: ~12 files, ~800 lines estimated
-**Route**: Codex (≥50 lines, L2 verification)
+## Phase 1: MCP Server + CLI + Hook
 
-### Phase 2: Signer Module [status: pending]
-- `packages/core/src/signer/interface.ts` — SignerInterface (sign/verify only, no key leakage)
-- `packages/core/src/signer/hmac.ts` — HMAC-SHA256 default implementation
-- Tests: `signer.test.ts`
+### Wave 1 (parallel, no deps) [status: in_progress]
 
-**Files**: 3 files, ~150 lines estimated
-**Route**: Codex (≥50 lines, L2 verification)
+| Branch | Task | Status |
+|--------|------|--------|
+| feat/phase1-wave1-mcp-server | MCP Server skeleton — stdio + 5 tool stubs + @hive-exp/core import | pending |
+| feat/phase1-wave1-cli-scaffold | CLI skeleton — 10 commands registered with stub output | pending |
+| feat/phase1-wave1-hook-script | signal-detector.py — load patterns from YAML, not hardcoded | pending |
 
-### Phase 3: Sanitizer Module [status: pending]
-- `packages/core/src/sanitizer/security.ts` — OWASP top 10 + Unicode variants
-- `packages/core/src/sanitizer/privacy.ts` — API keys, absolute paths, sensitive filenames
-- Tests: `sanitizer.test.ts`
+### Wave 2 (depends on Wave 1) [status: pending]
 
-**Files**: 3 files, ~200 lines estimated
-**Route**: Codex (≥50 lines, L2 verification)
+| Branch | Task | Status |
+|--------|------|--------|
+| feat/phase1-wave2-mcp-tools | 5 MCP tool full implementations (query/record/outcome/stats/promote) | pending |
+| feat/phase1-wave2-cli-commands | CLI all command implementations (call core API) | pending |
 
-### Phase 4: Events Module (Writer + Reader + Rotation) [status: pending]
-- `packages/core/src/events/writer.ts` — append-only, flock, monthly rotation
-- `packages/core/src/events/reader.ts` — multi-file reading, .gz support, line validation
-- Tests: `events.test.ts`
+### Wave 3 (depends on Wave 2) [status: pending]
 
-**Files**: 3 files, ~300 lines estimated
-**Route**: Codex (≥50 lines, L2 verification)
+| Branch | Task | Status |
+|--------|------|--------|
+| feat/phase1-wave3-integration | E2E integration tests — MCP start + CLI write + query + outcome + promote | pending |
+| feat/phase1-wave3-agent-config | Agent config templates + hive-exp init auto-detect MCP config | pending |
 
-### Phase 5: SQLite Projector [status: pending]
-- `packages/core/src/events/projector.ts` — events → SQLite projection, idempotent rebuild
-- DDL: usage_log table, experience_meta table, experience_stats view, strategy_stats view
-- 8 event type → SQL mapping rules
-- Tests: `projector.test.ts`
+### Phase 1 Acceptance Criteria
+- [ ] `npx @hive-exp/mcp` starts, 5 tools callable by Agent
+- [ ] `hive-exp` CLI all commands work
+- [ ] `hive-exp init` auto-detects Claude Code/Codex/Gemini/Antigravity
+- [ ] signal-detector.py loads patterns from config, not hardcoded
+- [ ] E2E: record → query → outcome → stats full chain
+- [ ] hive-exp promote requires interactive confirmation
 
-**Files**: 2 files, ~350 lines estimated
-**Route**: Codex (≥50 lines, L3 verification — DB schema changes)
+---
 
-### Phase 6: Memory Graph + Stats [status: pending]
-- `packages/core/src/memory-graph/writer.ts` — causal chain append
-- `packages/core/src/memory-graph/query.ts` — query by signal/strategy/agent
-- `packages/core/src/stats/aggregator.ts` — strategy stats from SQLite views
-- `packages/core/src/stats/decay.ts` — confidence decay (30-day half-life)
-- Tests: `memory-graph.test.ts`, `stats.test.ts`
+## Phase 2: Dashboard + Advanced Features
 
-**Files**: 6 files, ~400 lines estimated
-**Route**: Codex (≥50 lines, L2 verification)
+### Wave 1 (parallel, depends on Phase 1) [status: pending]
 
-### Phase 7: Conformance Tests + Index Export + Final Verification [status: pending]
-- `packages/core/src/index.ts` — public API exports
-- `packages/core/tests/conformance/` — MCP conformance test suite
-- Full `npm test` pass
-- Delivery report: `docs/phase-0.5-delivery-report.md`
+| Branch | Task | Status |
+|--------|------|--------|
+| feat/phase2-wave1-dashboard-scaffold | Dashboard skeleton — Express + static frontend + localhost:3721 | pending |
+| feat/phase2-wave1-consensus | Cross-agent consensus detection | pending |
+| feat/phase2-wave1-decay-cron | Confidence decay cron + 3 auto-archival rules | pending |
 
-**Files**: 3 files, ~200 lines estimated
-**Route**: Codex (conformance suite) + Claude (verification + report)
+### Wave 2 (depends on P2W1) [status: pending]
 
-## Key Design Constraints
-1. Event Sourcing: events.jsonl = single mutable truth, SQLite = projection cache
-2. Cold/hot separation: experience.yaml immutable, usage tracking in events + SQLite
-3. Monthly rotation: `events-{YYYY}-{MM}.jsonl`, 6-month gzip
-4. SignerInterface pluggable: sign(data)/verify(data,sig) only, key mgmt internal
-5. Signal Convention: ≥15 canonical signal names in Phase 0.5
-6. Zero external deps: Node.js built-ins + better-sqlite3 only
-7. Projector idempotent: rebuild() from scratch = incremental projection
+| Branch | Task | Status |
+|--------|------|--------|
+| feat/phase2-wave2-dashboard-overview | P0: System overview — agent status + experience count + pending badge | pending |
+| feat/phase2-wave2-dashboard-review | P0: Experience review table — per-agent grouping + promote/quarantine | pending |
+| feat/phase2-wave2-dashboard-audit | P0: Audit log — events.jsonl realtime stream | pending |
 
-## Acceptance Criteria
-- [ ] `npm test` all pass
-- [ ] schema validator covers all required fields + type checks
-- [ ] sanitizer covers OWASP top 10 injection + Unicode variants + privacy
-- [ ] events writer: flock + monthly files + rotation
-- [ ] projector: idempotent rebuild from events (delete SQLite, rebuild, verify)
-- [ ] signal-conventions: ≥15 canonical names
-- [ ] conformance test suite usable by future MCP Server
-- [ ] signer interface abstract enough (no HMAC detail leakage)
+### Wave 3 (depends on P2W2) [status: pending]
+
+| Branch | Task | Status |
+|--------|------|--------|
+| feat/phase2-wave3-dashboard-stats | P1: Strategy stats panel + experience leaderboard (Chart.js) | pending |
+| feat/phase2-wave3-export | hive-exp export --format json --min-confidence 0.8 | pending |
+| feat/phase2-wave3-ed25519 | @hive-exp/signer-ed25519 optional package | pending |
+
+---
+
+## Phase 3: Open Source Release + Cold Start
+
+### Wave 1 (parallel, depends on Phase 2) [status: pending]
+
+| Branch | Task | Status |
+|--------|------|--------|
+| feat/phase3-wave1-docs | README + Contributing + Adapter Guide + LICENSE (MIT) | pending |
+| feat/phase3-wave1-ci | GitHub Actions CI — lint + test + build | pending |
+| feat/phase3-wave1-seed-data | OpenClaw cold start — 20-30 structured experiences | pending |
+
+### Wave 2 (depends on P3W1) [status: pending]
+
+| Branch | Task | Status |
+|--------|------|--------|
+| feat/phase3-wave2-npm-publish | npm publish prep — package.json + npm pack verify | pending |
+| feat/phase3-wave2-community | Issue/PR templates + Discussion categories | pending |
+| feat/phase3-wave2-letta-doc | Letta/Mem0 integration docs | pending |
+
+---
+
+## Decisions Locked
+
+| Decision | Choice | Notes |
+|----------|--------|-------|
+| Python SDK | Phase 4 (community) | README: "Python SDK coming soon" |
+| Ed25519 | Phase 2 Wave 3 optional pkg | core SignerInterface already pluggable |
+| ARC params | Defaults, adaptive_risk_enabled: false | Toggle preserved |
+| RAG | Export command only, no integration | --format json --min-confidence |
+| Letta adapter | Docs only, no code | Describe how to integrate |
+| Cold start | 20-30 OpenClaw experiences | Via xiaohongshu-mcp + GitHub issues |
 
 ## Errors Encountered
-| Error | Attempt | Resolution |
-|-------|---------|------------|
+| Error | Phase | Resolution |
+|-------|-------|------------|
 | (none yet) | | |
