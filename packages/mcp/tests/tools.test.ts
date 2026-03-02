@@ -36,6 +36,7 @@ describe("Integration Tests", () => {
 
   beforeEach(() => {
     tmpDir = makeTmpDir();
+    fs.writeFileSync(path.join(tmpDir, 'config.json'), JSON.stringify({ auto_approve: false }));
     ctx = createContext(tmpDir);
     handlers = createToolHandlers(ctx);
   });

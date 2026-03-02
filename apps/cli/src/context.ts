@@ -4,6 +4,7 @@ import {
   EventProjector,
   StatsAggregator,
   createSigner,
+  resolveConfig,
 } from '@hive-exp/core';
 import type { SignerInterface } from '@hive-exp/core';
 import * as fs from 'node:fs';
@@ -24,6 +25,7 @@ export interface CliContext {
   projector: EventProjector;
   aggregator: StatsAggregator;
   signer: SignerInterface;
+  autoApprove: boolean;
 }
 
 export function resolveDataDir(): string {
@@ -47,6 +49,7 @@ export function ensureDataDir(root: string): void {
 export function createContext(dataDir?: string): CliContext {
   const root = dataDir ?? resolveDataDir();
   ensureDataDir(root);
+  const config = resolveConfig(root);
 
   const experiencesDir = path.join(root, 'experiences');
   const provisionalDir = path.join(root, 'experiences', 'provisional');
@@ -82,5 +85,6 @@ export function createContext(dataDir?: string): CliContext {
     projector,
     aggregator,
     signer,
+    autoApprove: config.autoApprove,
   };
 }

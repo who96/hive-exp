@@ -9,6 +9,7 @@ import { registerArchive } from './commands/archive.js';
 import { registerStats } from './commands/stats.js';
 import { registerReplay } from './commands/replay.js';
 import { registerExport } from './commands/export.js';
+import { registerConfig } from './commands/config.js';
 
 export const program = new Command();
 
@@ -27,5 +28,6 @@ registerArchive(program);
 registerStats(program);
 registerReplay(program);
 registerExport(program);
+registerConfig(program);
 
 program.parse();

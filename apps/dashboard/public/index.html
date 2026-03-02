@@ -23,6 +23,7 @@
         <button class="tab-btn" data-tab="experiences" data-i18n="tab_experiences">Experiences</button>
         <button class="tab-btn" data-tab="events" data-i18n="tab_events">Audit Log</button>
         <button class="tab-btn" data-tab="stats" data-i18n="tab_stats">Stats</button>
+        <button class="tab-btn" data-tab="settings" data-i18n="tab_settings">Settings</button>
       </div>
 
       <section id="overview" class="tab-pane active">
@@ -45,6 +46,9 @@
 
           <label for="filter-agent" data-i18n="agent">Agent</label>
           <input id="filter-agent" type="text" placeholder="agent-a" />
+
+          <label for="filter-strategy" data-i18n="strategy">Strategy</label>
+          <input id="filter-strategy" type="text" placeholder="fix_typescript_error" />
 
           <label for="filter-limit" data-i18n="limit">Limit</label>
           <select id="filter-limit">
@@ -91,7 +95,33 @@
         <h2 data-i18n="agent_contributions">Agent Contributions</h2>
         <div id="stats-agents"></div>
       </section>
+
+      <section id="settings" class="tab-pane">
+        <h1 data-i18n="tab_settings">Settings</h1>
+        <div class="settings-group">
+          <div class="setting-item">
+            <div class="setting-info">
+              <label class="setting-label" data-i18n="auto_approve_label">Auto Approve</label>
+              <p class="setting-desc" data-i18n="auto_approve_desc">When enabled, new experiences skip review and are directly approved.</p>
+            </div>
+            <label class="toggle-switch">
+              <input type="checkbox" id="setting-auto-approve" />
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+        </div>
+      </section>
     </main>
+
+    <div id="detail-modal" class="modal-overlay" style="display:none" onclick="if(event.target===this)closeDetail()">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2 data-i18n="experience_detail">Experience Detail</h2>
+          <button class="btn" onclick="closeDetail()">&times;</button>
+        </div>
+        <div id="detail-body"></div>
+      </div>
+    </div>
 
     <script src="main.js"></script>
   </body>

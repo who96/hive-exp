@@ -31,3 +31,5 @@ export * from './cron.js';
 
 // Consensus
 export { ConsensusDetector, type ConsensusResult, type ConsensusDetectorOptions } from './consensus.js';
+
+export { resolveConfig, writeConfig, type HiveExpConfig } from './config.js';

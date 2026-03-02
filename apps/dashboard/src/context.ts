@@ -4,6 +4,7 @@ import {
   EventProjector,
   StatsAggregator,
   createSigner,
+  resolveConfig,
 } from '@hive-exp/core';
 import type { SignerInterface } from '@hive-exp/core';
 import * as fs from 'node:fs';
@@ -24,10 +25,12 @@ export interface DashboardContext {
   projector: EventProjector;
   aggregator: StatsAggregator;
   signer: SignerInterface;
+  autoApprove: boolean;
 }
 
 export function createDashboardContext(dataDir?: string): DashboardContext {
   const root = dataDir ?? process.env.HIVE_EXP_HOME ?? path.join(os.homedir(), '.hive-exp');
+  const config = resolveConfig(root);
   const experiencesDir = path.join(root, 'experiences');
   const provisionalDir = path.join(root, 'experiences', 'provisional');
   const promotedDir = path.join(root, 'experiences', 'promoted');
@@ -99,5 +102,6 @@ export function createDashboardContext(dataDir?: string): DashboardContext {
     projector,
     aggregator,
     signer,
+    autoApprove: config.autoApprove,
   };
 }

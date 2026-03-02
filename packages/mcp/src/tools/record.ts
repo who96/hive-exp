@@ -116,10 +116,22 @@ export function createHandler(ctx: HiveExpContext): ToolHandler {
     }
 
     // Write JSON file
-    await fs.writeFile(
-      path.join(ctx.provisionalDir, `${expId}.json`),
-      JSON.stringify(record, null, 2),
-    );
+    if (ctx.autoApprove) {
+      record.provisional = false;
+      record.promoted = true;
+      record.provisional_deadline = null;
+      record.signature = '';
+      record.signature = ctx.signer.sign(JSON.stringify({ ...record, signature: '' }));
+      await fs.writeFile(
+        path.join(ctx.promotedDir, `${expId}.json`),
+        JSON.stringify(record, null, 2),
+      );
+    } else {
+      await fs.writeFile(
+        path.join(ctx.provisionalDir, `${expId}.json`),
+        JSON.stringify(record, null, 2),
+      );
+    }
 
     // Append experience.created event
     const eventId = generateId("evt");
@@ -136,6 +148,22 @@ export function createHandler(ctx: HiveExpContext): ToolHandler {
     };
 
     await ctx.eventWriter.append(event as HiveEvent);
+    if (ctx.autoApprove) {
+      const promoteEventId = generateId('evt');
+      const promoteEvent: HiveEvent = {
+        event_id: promoteEventId,
+        type: 'experience.promoted',
+        timestamp: now,
+        source_agent: record.source_agent,
+        signature: ctx.signer.sign(promoteEventId),
+        payload: {
+          exp_id: expId,
+          promoted_by: 'auto',
+          auto_approved: true,
+        },
+      };
+      await ctx.eventWriter.append(promoteEvent);
+    }
     await ctx.projector.incrementalSync();
 
     // Check low complexity warning
@@ -148,8 +176,9 @@ export function createHandler(ctx: HiveExpContext): ToolHandler {
     const result: Record<string, unknown> = {
       exp_id: expId,
       status: "created",
-      provisional: true,
+      provisional: !ctx.autoApprove,
     };
+    if (ctx.autoApprove) result.auto_approved = true;
     if (warning) result.warning = warning;
 
     return {

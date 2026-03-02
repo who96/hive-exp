@@ -1,33 +1,35 @@
 # Session State
 
 ## Goal
-All phases (0.5→3) delivered. CI green. Project ready for open-source release.
+Dashboard UX polish: favicon + EN/ZH i18n toggle.
 
 ## Recently Completed
-1. Fixed better-sqlite3 native module CI failure (explicit node-gyp rebuild)
-2. Fixed MCP tsup.config banner function (entryPoint doesn't exist in API, switched to array config)
-3. Fixed signer-ed25519 missing @types/node devDependency
-4. Fixed dashboard tsconfig (excluded tests from build, disabled declaration emit)
-5. Squashed 7 CI fix commits into one and force-pushed to main
+1. Added honeycomb favicon (favicon.svg) to dashboard
+2. Implemented full EN/ZH i18n with data-cache + render separation (zero re-fetch on lang switch)
+3. Added lang toggle button in header (pill style, localStorage persistence)
+4. All static HTML elements tagged with data-i18n, all dynamic text via t() function
+5. Updated CLAUDE.md routing rules: main agent never writes code, must delegate to subagent even on Codex fallback
 
 ## Blockers
 None.
 
 ## Next Action
-Project is feature-complete through Phase 3. Next would be Phase 4 (community-driven: Python SDK, RAG adapters, ARC adaptive risk).
+Manual verification: `pnpm --filter @hive-exp/dashboard run dev` → test favicon, EN/ZH toggle, localStorage persistence, chart label translation.
 
 ## Acceptance Gate
-- CI: 3/3 jobs green (lint-and-typecheck, test, build-check)
-- Tests: 255 passing across 6 suites
-- All packages build clean with `pnpm -r run build`
+- CI: 3/3 jobs green
+- Dashboard build: `tsc` clean
+- Dashboard tests: 17/17 passing
+- Manual: favicon visible, lang toggle works without loading flicker, persists across refresh
 
 ## Evidence
-- Branch: main @ b88e1d6
-- CI run 22558268204: all 3 jobs SUCCESS
-- Delivery reports: docs/full-delivery-report.md, docs/phase-{1,2,3}-delivery-report.md
+- Branch: main @ 6d48f73
+- Dashboard build: clean
+- Dashboard tests: 17/17 passing
+- Files changed: favicon.svg (new), index.html, main.js, styles.css
 
 ## Active Lanes
-None — all phases complete.
+None — implementation complete, pending manual verification.
 
 ## Pending Delegations
 None.

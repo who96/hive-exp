@@ -6,8 +6,14 @@ const I18N = {
     tab_overview: 'Overview', tab_experiences: 'Experiences',
     tab_events: 'Audit Log', tab_stats: 'Stats',
     total_experiences: 'Total Experiences', provisional: 'Provisional',
-    promoted: 'Promoted', archived: 'Archived',
-    pending_review: 'Pending Review', events_24h: 'Events (24h)',
+    promoted: 'Approved', archived: 'Archived',
+    events_24h: 'Events (24h)',
+    tab_settings: 'Settings',
+    auto_approve_label: 'Auto Approve',
+    auto_approve_desc: 'When enabled, new experiences skip review and are directly approved.',
+    auto_approve_warning: 'Warning: auto_approve=true means new experiences go directly to the trusted zone without review.',
+    experience_detail: 'Experience Detail',
+    view: 'View',
     agents: 'Agents', agent: 'Agent', experiences_col: 'Experiences',
     id: 'ID', status: 'Status', status_all: 'All', strategy: 'Strategy',
     confidence: 'Confidence', actions: 'Actions',
@@ -33,8 +39,14 @@ const I18N = {
     tab_overview: '概览', tab_experiences: '经验库',
     tab_events: '审计日志', tab_stats: '统计',
     total_experiences: '总经验数', provisional: '待审核',
-    promoted: '已推广', archived: '已归档',
-    pending_review: '待审阅', events_24h: '近24h事件',
+    promoted: '已通过', archived: '已归档',
+    events_24h: '近24h事件',
+    tab_settings: '设置',
+    auto_approve_label: '自动审核',
+    auto_approve_desc: '开启后，新经验无需审核直接进入信任区。',
+    auto_approve_warning: '注意：开启后新经验将跳过审核直接进入信任区。',
+    experience_detail: '经验详情',
+    view: '查看',
     agents: 'Agent 列表', agent: 'Agent', experiences_col: '经验数',
     id: 'ID', status: '状态', status_all: '全部', strategy: '策略',
     confidence: '置信度', actions: '操作',
@@ -64,6 +76,7 @@ let _overviewData = null;
 let _experiencesData = null;
 let _eventsData = null;
 let _statsData = null;
+let _settingsData = null;
 
 // --- Chart instances ---
 let _chartRanking = null;
@@ -91,6 +104,7 @@ function loadTab(tab) {
   else if (tab === 'experiences') loadExperiences();
   else if (tab === 'events') loadEvents();
   else if (tab === 'stats') loadStats();
+  else if (tab === 'settings') loadSettings();
 }
 
 // --- Overview ---
@@ -112,7 +126,6 @@ function renderOverview() {
     ['provisional', d.provisional_count],
     ['promoted', d.promoted_count],
     ['archived', d.archived_count],
-    ['pending_review', d.pending_review],
     ['events_24h', d.recent_events],
   ].map(([key, val]) =>
     `<div class="stat-card"><div class="value">${val}</div><div class="label">${t(key)}</div></div>`
@@ -132,6 +145,7 @@ function renderOverview() {
 async function loadExperiences() {
   const status = document.getElementById('filter-status')?.value || '';
   const agent = document.getElementById('filter-agent')?.value || '';
+  const strategy = document.getElementById('filter-strategy')?.value || '';
   const limit = document.getElementById('filter-limit')?.value || '50';
   const el = document.getElementById('experiences-content');
   el.innerHTML = `<p>${t('loading')}</p>`;
@@ -141,12 +155,15 @@ async function loadExperiences() {
   const resp = await fetchApi(url);
   if (resp.status !== 'ok') { el.innerHTML = `<p>${t('error_loading')}</p>`; return; }
   _experiencesData = resp.data;
-  renderExperiences();
+  renderExperiences(strategy);
 }
 
-function renderExperiences() {
+function renderExperiences(strategyFilter) {
   if (!_experiencesData) return;
-  const items = _experiencesData.items || [];
+  let items = _experiencesData.items || [];
+  if (strategyFilter) {
+    items = items.filter(r => (r.strategy?.name || '').toLowerCase().includes(strategyFilter.toLowerCase()));
+  }
   const el = document.getElementById('experiences-content');
   if (items.length === 0) { el.innerHTML = `<p>${t('no_experiences')}</p>`; return; }
   el.innerHTML = `<table class="table">
@@ -159,6 +176,7 @@ function renderExperiences() {
         <td>${r.strategy?.name || ''}</td>
         <td>${(r.confidence * 100).toFixed(0)}%</td>
         <td>
+          <button class="btn btn-view" onclick="viewDetail('${r.id}')">${t('view')}</button>
           ${r._status === 'provisional' ? `<button class="btn btn-promote" onclick="promoteExp('${r.id}')">${t('promote')}</button>` : ''}
           ${r._status !== 'archived' ? `<button class="btn btn-quarantine" onclick="quarantineExp('${r.id}')">${t('quarantine')}</button>` : ''}
         </td>
@@ -334,6 +352,54 @@ function renderStats() {
       </table>`;
     }
   }
+}
+
+async function loadSettings() {
+  const el = document.getElementById('setting-auto-approve');
+  if (!el) return;
+  const resp = await fetchApi('/config');
+  if (resp.status !== 'ok') return;
+  _settingsData = resp.data;
+  el.checked = _settingsData.autoApprove;
+}
+
+document.getElementById('setting-auto-approve')?.addEventListener('change', async (e) => {
+  const newVal = e.target.checked;
+  await fetch('/api/config', {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ autoApprove: newVal }),
+  });
+});
+
+async function viewDetail(id) {
+  const modal = document.getElementById('detail-modal');
+  const body = document.getElementById('detail-body');
+  body.innerHTML = `<p>${t('loading')}</p>`;
+  modal.style.display = 'flex';
+  const resp = await fetchApi(`/experience/${id}`);
+  if (resp.status !== 'ok') { body.innerHTML = `<p>${t('error_loading')}</p>`; return; }
+  const d = resp.data;
+  body.innerHTML = `
+    <table class="table">
+      <tr><td>${t('id')}</td><td>${d.id}</td></tr>
+      <tr><td>${t('status')}</td><td><span class="badge badge-${d._status}">${t(d._status)}</span></td></tr>
+      <tr><td>${t('agent')}</td><td>${d.source_agent}</td></tr>
+      <tr><td>${t('strategy')}</td><td>${d.strategy?.name || ''}</td></tr>
+      <tr><td>${t('confidence')}</td><td>${(d.confidence * 100).toFixed(0)}%</td></tr>
+      <tr><td>Scope</td><td>${d.scope || ''}</td></tr>
+      <tr><td>Signals</td><td>${(d.signals || []).join(', ')}</td></tr>
+      <tr><td>Preconditions</td><td>${(d.preconditions || []).join(', ')}</td></tr>
+      <tr><td>Outcome</td><td>${d.outcome?.status || ''} ${d.outcome?.evidence ? '— ' + d.outcome.evidence : ''}</td></tr>
+      <tr><td>Risk Level</td><td>${d.risk_level || ''}</td></tr>
+      <tr><td>Created</td><td>${d.created || ''}</td></tr>
+      <tr><td>Description</td><td>${d.strategy?.description || ''}</td></tr>
+    </table>
+  `;
+}
+
+function closeDetail() {
+  document.getElementById('detail-modal').style.display = 'none';
 }
 
 // --- Language toggle ---
