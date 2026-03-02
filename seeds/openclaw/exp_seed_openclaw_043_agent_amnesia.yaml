@@ -1,0 +1,35 @@
+id: "exp_1772323243000_a1b2c318"
+type: "experience"
+schema_version: "1.1.0"
+signals:
+  - "openclaw_agent_amnesia"
+  - "memory_loss_between_sessions"
+scope: "project"
+preconditions:
+  - "OpenClaw"
+  - "Agent expected to retain cross-session context"
+strategy:
+  name: "implement_persistent_memory_pipeline"
+  description: "Agent amnesia occurs when session context is not persisted to disk. Implement a memory pipeline that writes key conversation summaries, decisions, and user preferences to memory files at session end, and loads them at session start. Combine with the MEMORY.md index pattern."
+  category: "repair"
+outcome:
+  status: "success"
+  evidence: "Agent reliably recalls previous session context including user preferences, ongoing tasks, and prior decisions. Memory pipeline runs as a session shutdown hook."
+  blast_radius:
+    files: 4
+    lines: 75
+confidence: 0.90
+source_agent: "seed-data"
+signature: "hmac-sha256:seed-placeholder-not-verified"
+validated_by: null
+promoted: true
+provisional: false
+provisional_deadline: null
+supersedes: null
+superseded_by: null
+risk_level: "medium"
+created: "2026-03-02T00:00:43Z"
+last_confirmed: "2026-03-02T00:00:43Z"
+decay_halflife_days: 90
+archived: false
+archived_reason: null

@@ -1,0 +1,35 @@
+id: "exp_1772323247000_a1b2c322"
+type: "experience"
+schema_version: "1.1.0"
+signals:
+  - "openclaw_windows_deploy_fail"
+  - "windows_path_separator_issue"
+scope: "project"
+preconditions:
+  - "OpenClaw"
+  - "Windows local deployment (not WSL)"
+strategy:
+  name: "normalize_paths_and_use_wsl_fallback"
+  description: "Windows native deployment hits path separator issues (backslash vs forward slash) and missing Unix utilities. Either deploy inside WSL2 for full compatibility, or normalize all file paths in config to use forward slashes and install Windows equivalents of required Unix tools (e.g., Git Bash provides most utilities)."
+  category: "repair"
+outcome:
+  status: "success"
+  evidence: "OpenClaw runs stably on Windows via WSL2 with no path-related errors. Native Windows deployment also works after path normalization but requires more manual setup."
+  blast_radius:
+    files: 5
+    lines: 40
+confidence: 0.86
+source_agent: "seed-data"
+signature: "hmac-sha256:seed-placeholder-not-verified"
+validated_by: null
+promoted: true
+provisional: false
+provisional_deadline: null
+supersedes: null
+superseded_by: null
+risk_level: "medium"
+created: "2026-03-02T00:00:47Z"
+last_confirmed: "2026-03-02T00:00:47Z"
+decay_halflife_days: 90
+archived: false
+archived_reason: null

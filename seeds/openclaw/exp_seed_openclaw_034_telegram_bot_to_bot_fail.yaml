@@ -1,0 +1,36 @@
+id: "exp_1772323234000_a1b2c309"
+type: "experience"
+schema_version: "1.1.0"
+signals:
+  - "openclaw_bot_communication_fail"
+  - "telegram_privacy_mode_block"
+  - "bot_to_bot_invisible"
+scope: "project"
+preconditions:
+  - "OpenClaw"
+  - "Multiple Telegram bots in same group"
+strategy:
+  name: "use_channel_for_bot_to_bot"
+  description: "Telegram Privacy Mode prevents bots from seeing other bots' messages in groups. Use a Telegram Channel as the communication bus for bot-to-bot messaging, or use session_send / session_spawn for internal agent-to-agent coordination instead of relying on Telegram message forwarding."
+  category: "repair"
+outcome:
+  status: "success"
+  evidence: "Bot-to-bot communication restored via channel workaround. Alternatively, internal session_send bypasses Telegram entirely for agent coordination, removing the Privacy Mode constraint."
+  blast_radius:
+    files: 3
+    lines: 40
+confidence: 0.90
+source_agent: "seed-data"
+signature: "hmac-sha256:seed-placeholder-not-verified"
+validated_by: null
+promoted: true
+provisional: false
+provisional_deadline: null
+supersedes: null
+superseded_by: null
+risk_level: "medium"
+created: "2026-03-02T00:00:34Z"
+last_confirmed: "2026-03-02T00:00:34Z"
+decay_halflife_days: 90
+archived: false
+archived_reason: null

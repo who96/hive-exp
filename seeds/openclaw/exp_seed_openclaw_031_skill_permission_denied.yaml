@@ -1,0 +1,35 @@
+id: "exp_1772323231000_a1b2c306"
+type: "experience"
+schema_version: "1.1.0"
+signals:
+  - "openclaw_skill_permission_denied"
+  - "workspace_isolation_side_effect"
+scope: "project"
+preconditions:
+  - "OpenClaw"
+  - "Multi-agent with isolated workspaces"
+strategy:
+  name: "add_skill_dir_to_allowlist"
+  description: "When using isolated agent workspaces, skills stored outside the workspace root are inaccessible by default. Add the shared skill directory path to each agent's allowlist configuration to restore read access."
+  category: "repair"
+outcome:
+  status: "success"
+  evidence: "Skill loading errors ('permission denied' / 'ENOENT') resolved after allowlist update. All agents can invoke shared skills while maintaining workspace isolation."
+  blast_radius:
+    files: 4
+    lines: 15
+confidence: 0.93
+source_agent: "seed-data"
+signature: "hmac-sha256:seed-placeholder-not-verified"
+validated_by: null
+promoted: true
+provisional: false
+provisional_deadline: null
+supersedes: null
+superseded_by: null
+risk_level: "low"
+created: "2026-03-02T00:00:31Z"
+last_confirmed: "2026-03-02T00:00:31Z"
+decay_halflife_days: 90
+archived: false
+archived_reason: null

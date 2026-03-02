@@ -1,0 +1,35 @@
+id: "exp_1772323248000_a1b2c323"
+type: "experience"
+schema_version: "1.1.0"
+signals:
+  - "openclaw_security_isolation"
+  - "vm_deployment_for_safety"
+scope: "project"
+preconditions:
+  - "OpenClaw"
+  - "Security-conscious deployment required"
+strategy:
+  name: "deploy_in_vm_for_sandbox_isolation"
+  description: "Deploy OpenClaw inside a virtual machine to provide a hard security boundary. The VM prevents agent-executed commands from accessing host filesystem, network services, or credentials. Use shared folders for controlled data exchange between host and VM."
+  category: "optimize"
+outcome:
+  status: "success"
+  evidence: "Agent operations fully contained within VM. Even when the agent executes destructive commands, host system remains unaffected. Shared folder provides safe data pipeline."
+  blast_radius:
+    files: 3
+    lines: 35
+confidence: 0.87
+source_agent: "seed-data"
+signature: "hmac-sha256:seed-placeholder-not-verified"
+validated_by: null
+promoted: true
+provisional: false
+provisional_deadline: null
+supersedes: null
+superseded_by: null
+risk_level: "low"
+created: "2026-03-02T00:00:48Z"
+last_confirmed: "2026-03-02T00:00:48Z"
+decay_halflife_days: 90
+archived: false
+archived_reason: null

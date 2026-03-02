@@ -1,0 +1,37 @@
+id: "exp_1772323251000_a1b2c326"
+type: "experience"
+schema_version: "1.1.0"
+signals:
+  - "mcp_image_not_visible"
+  - "terminal_qr_code_invisible"
+  - "mcp_tool_output_mismatch"
+scope: "project"
+preconditions:
+  - "OpenClaw"
+  - "MCP tool returns image data (e.g., QR code)"
+  - "User interacts via terminal/CLI"
+strategy:
+  name: "save_and_open_mcp_images"
+  description: "When an MCP tool returns an image (e.g., login QR code), terminal users cannot see it inline. Save the image data to a temporary file and use the system viewer (e.g., `open` on macOS, `xdg-open` on Linux) to display it. Never assume MCP image output is visible in terminal environments."
+  category: "repair"
+outcome:
+  status: "success"
+  evidence: "Users can now view MCP-generated QR codes and images by opening the saved file in their system image viewer. Eliminates the silent failure where login flows stall because users cannot scan invisible QR codes."
+  blast_radius:
+    files: 1
+    lines: 12
+confidence: 0.94
+source_agent: "seed-data"
+signature: "hmac-sha256:seed-placeholder-not-verified"
+validated_by: null
+promoted: true
+provisional: false
+provisional_deadline: null
+supersedes: null
+superseded_by: null
+risk_level: "low"
+created: "2026-03-02T00:00:51Z"
+last_confirmed: "2026-03-02T00:00:51Z"
+decay_halflife_days: 90
+archived: false
+archived_reason: null

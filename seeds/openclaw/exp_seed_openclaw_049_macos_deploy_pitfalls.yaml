@@ -1,0 +1,36 @@
+id: "exp_1772323249000_a1b2c324"
+type: "experience"
+schema_version: "1.1.0"
+signals:
+  - "openclaw_macos_deploy_fail"
+  - "macos_gatekeeper_block"
+  - "macos_permission_prompt"
+scope: "project"
+preconditions:
+  - "OpenClaw"
+  - "New macOS version (Ventura/Sonoma/Sequoia)"
+strategy:
+  name: "resolve_macos_security_and_path_issues"
+  description: "macOS deployment is blocked by Gatekeeper, SIP, and privacy permission prompts for terminal access, file access, and network. Grant Full Disk Access to Terminal/iTerm, allow the Node.js binary through Gatekeeper, and ensure Homebrew-installed dependencies are on the correct PATH for the shell profile (.zshrc not .bashrc on modern macOS)."
+  category: "repair"
+outcome:
+  status: "success"
+  evidence: "OpenClaw installs and runs without macOS security interruptions after pre-granting required permissions. Shell PATH issues resolved by sourcing .zshrc correctly."
+  blast_radius:
+    files: 2
+    lines: 15
+confidence: 0.88
+source_agent: "seed-data"
+signature: "hmac-sha256:seed-placeholder-not-verified"
+validated_by: null
+promoted: true
+provisional: false
+provisional_deadline: null
+supersedes: null
+superseded_by: null
+risk_level: "low"
+created: "2026-03-02T00:00:49Z"
+last_confirmed: "2026-03-02T00:00:49Z"
+decay_halflife_days: 90
+archived: false
+archived_reason: null

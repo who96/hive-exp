@@ -1,0 +1,35 @@
+id: "exp_1772323237000_a1b2c312"
+type: "experience"
+schema_version: "1.1.0"
+signals:
+  - "openclaw_multi_agent_architecture_design"
+  - "shared_knowledge_hub_pattern"
+scope: "project"
+preconditions:
+  - "OpenClaw"
+  - "Multiple independent bot instances required"
+strategy:
+  name: "layered_workspace_with_shared_hub"
+  description: "Architect multi-agent systems as N independent workspaces (each with own SOUL.md, identity, memory) plus a shared knowledge_hub directory containing common skills, memory, and reference data. Agents read from hub but write only to their own workspace."
+  category: "innovate"
+outcome:
+  status: "success"
+  evidence: "Four independent agents running without identity confusion, each with distinct persona. Shared knowledge hub provides consistent domain knowledge without write conflicts."
+  blast_radius:
+    files: 16
+    lines: 200
+confidence: 0.93
+source_agent: "seed-data"
+signature: "hmac-sha256:seed-placeholder-not-verified"
+validated_by: null
+promoted: true
+provisional: false
+provisional_deadline: null
+supersedes: null
+superseded_by: null
+risk_level: "high"
+created: "2026-03-02T00:00:37Z"
+last_confirmed: "2026-03-02T00:00:37Z"
+decay_halflife_days: 90
+archived: false
+archived_reason: null

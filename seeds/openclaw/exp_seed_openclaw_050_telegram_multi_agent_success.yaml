@@ -1,0 +1,35 @@
+id: "exp_1772323250000_a1b2c325"
+type: "experience"
+schema_version: "1.1.0"
+signals:
+  - "openclaw_telegram_multi_agent_success"
+  - "session_spawn_coordination"
+scope: "project"
+preconditions:
+  - "OpenClaw"
+  - "Telegram multi-agent setup"
+strategy:
+  name: "session_spawn_with_telegram_routing"
+  description: "Achieve reliable Telegram multi-agent by combining internal session_spawn for agent-to-agent coordination with per-bot Telegram routing. Each bot handles its own Telegram webhook, while session_spawn manages task delegation and result aggregation between agents internally."
+  category: "innovate"
+outcome:
+  status: "success"
+  evidence: "Multi-agent Telegram system with 3+ bots running stable. Internal coordination via session_spawn avoids Telegram Privacy Mode limitations entirely. Users interact with individual bots naturally."
+  blast_radius:
+    files: 8
+    lines: 130
+confidence: 0.88
+source_agent: "seed-data"
+signature: "hmac-sha256:seed-placeholder-not-verified"
+validated_by: null
+promoted: true
+provisional: false
+provisional_deadline: null
+supersedes: null
+superseded_by: null
+risk_level: "high"
+created: "2026-03-02T00:00:50Z"
+last_confirmed: "2026-03-02T00:00:50Z"
+decay_halflife_days: 90
+archived: false
+archived_reason: null

@@ -1,0 +1,35 @@
+id: "exp_1772323228000_a1b2c303"
+type: "experience"
+schema_version: "1.1.0"
+signals:
+  - "openclaw_memory_stale"
+  - "manual_memory_maintenance"
+scope: "project"
+preconditions:
+  - "OpenClaw"
+  - "Agent memory files require periodic updates"
+strategy:
+  name: "automate_memory_via_cron"
+  description: "Set up a cron job to periodically consolidate, prune, and re-index agent memory files. Automates the tedious manual maintenance of MEMORY.md and related memory stores."
+  category: "optimize"
+outcome:
+  status: "success"
+  evidence: "Memory files stay within size budget without manual intervention. Cron job runs nightly, compacting duplicates and archiving entries older than 30 days."
+  blast_radius:
+    files: 3
+    lines: 45
+confidence: 0.88
+source_agent: "seed-data"
+signature: "hmac-sha256:seed-placeholder-not-verified"
+validated_by: null
+promoted: true
+provisional: false
+provisional_deadline: null
+supersedes: null
+superseded_by: null
+risk_level: "low"
+created: "2026-03-02T00:00:28Z"
+last_confirmed: "2026-03-02T00:00:28Z"
+decay_halflife_days: 90
+archived: false
+archived_reason: null

@@ -1,0 +1,35 @@
+id: "exp_1772323236000_a1b2c311"
+type: "experience"
+schema_version: "1.1.0"
+signals:
+  - "openclaw_allowlist_inflexible"
+  - "group_policy_misconfigured"
+scope: "project"
+preconditions:
+  - "OpenClaw"
+  - "groupPolicy set to allowlist"
+strategy:
+  name: "switch_group_policy_to_open"
+  description: "The allowlist groupPolicy requires pre-configured group IDs, which breaks when bots are added to new groups. Switch to groupPolicy 'open' for flexibility, or maintain a dynamic allowlist that auto-registers new group IDs on first contact."
+  category: "repair"
+outcome:
+  status: "success"
+  evidence: "Bot now responds in any group without manual ID registration. For security-sensitive deployments, a hybrid approach logs new groups for admin review while allowing immediate responses."
+  blast_radius:
+    files: 2
+    lines: 10
+confidence: 0.92
+source_agent: "seed-data"
+signature: "hmac-sha256:seed-placeholder-not-verified"
+validated_by: null
+promoted: true
+provisional: false
+provisional_deadline: null
+supersedes: null
+superseded_by: null
+risk_level: "low"
+created: "2026-03-02T00:00:36Z"
+last_confirmed: "2026-03-02T00:00:36Z"
+decay_halflife_days: 90
+archived: false
+archived_reason: null

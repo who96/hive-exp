@@ -1,0 +1,35 @@
+id: "exp_1772323241000_a1b2c316"
+type: "experience"
+schema_version: "1.1.0"
+signals:
+  - "openclaw_discord_multi_agent"
+  - "discord_channel_isolation"
+scope: "project"
+preconditions:
+  - "OpenClaw"
+  - "Discord integration with multiple agents"
+strategy:
+  name: "assign_independent_channels_per_agent"
+  description: "Give each agent its own dedicated Discord channel to avoid message routing confusion. Use Discord's channel permissions to ensure each bot only reads from and writes to its assigned channel. For cross-agent coordination, use a2a protocol or a shared coordination channel."
+  category: "optimize"
+outcome:
+  status: "success"
+  evidence: "Each agent responds only in its own channel, eliminating cross-talk. Users can engage specific agents by choosing the appropriate channel. a2a handles backend coordination."
+  blast_radius:
+    files: 5
+    lines: 65
+confidence: 0.90
+source_agent: "seed-data"
+signature: "hmac-sha256:seed-placeholder-not-verified"
+validated_by: null
+promoted: true
+provisional: false
+provisional_deadline: null
+supersedes: null
+superseded_by: null
+risk_level: "low"
+created: "2026-03-02T00:00:41Z"
+last_confirmed: "2026-03-02T00:00:41Z"
+decay_halflife_days: 90
+archived: false
+archived_reason: null

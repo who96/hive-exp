@@ -1,0 +1,35 @@
+id: "exp_1772323229000_a1b2c304"
+type: "experience"
+schema_version: "1.1.0"
+signals:
+  - "openclaw_task_management_chaos"
+  - "agent_task_tracking_missing"
+scope: "project"
+preconditions:
+  - "OpenClaw"
+  - "Agent handling multiple ongoing tasks"
+strategy:
+  name: "adopt_markdown_gtd_system"
+  description: "Use a Markdown-based GTD (Getting Things Done) system for agent task management. Structure tasks with inbox, next-actions, waiting-for, and done sections in a TASKS.md file the agent reads on each session start."
+  category: "innovate"
+outcome:
+  status: "success"
+  evidence: "Agent reliably picks up pending tasks across sessions. Task completion rate improved as the agent no longer forgets mid-flight work items."
+  blast_radius:
+    files: 2
+    lines: 60
+confidence: 0.87
+source_agent: "seed-data"
+signature: "hmac-sha256:seed-placeholder-not-verified"
+validated_by: null
+promoted: true
+provisional: false
+provisional_deadline: null
+supersedes: null
+superseded_by: null
+risk_level: "low"
+created: "2026-03-02T00:00:29Z"
+last_confirmed: "2026-03-02T00:00:29Z"
+decay_halflife_days: 90
+archived: false
+archived_reason: null

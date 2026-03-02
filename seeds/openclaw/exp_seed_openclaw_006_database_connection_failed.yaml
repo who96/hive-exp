@@ -9,7 +9,10 @@ preconditions:
   - "Database credentials configured"
 strategy:
   name: "fix_database_dsn"
-  description: "核对 `DATABASE_URL` 的协议、主机、端口与数据库名是否正确，确认 URL 中密码转义，且数据库用户具备建库建表权限。尝试 `psql "$DATABASE_URL" -c '\\conninfo'`（或对应驱动）验证链路后再启动。"
+  description: >
+    核对 DATABASE_URL 的协议、主机、端口与数据库名是否正确，确认 URL 中密码转义，
+    且数据库用户具备建库建表权限。尝试 psql "$DATABASE_URL" -c '\conninfo'
+    （或对应驱动）验证链路后再启动。
   category: "repair"
 outcome:
   status: "success"

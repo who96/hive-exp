@@ -1,0 +1,35 @@
+id: "exp_1772323239000_a1b2c314"
+type: "experience"
+schema_version: "1.1.0"
+signals:
+  - "openclaw_service_instability"
+  - "openclaw_failover_needed"
+scope: "project"
+preconditions:
+  - "OpenClaw"
+  - "Primary platform experiencing downtime"
+strategy:
+  name: "discord_failover_for_availability"
+  description: "Configure Discord as a failover channel when the primary OpenClaw service is unstable. Run a lightweight health-check that auto-switches user traffic to a Discord bot endpoint when the main gateway is unresponsive for more than 30 seconds."
+  category: "optimize"
+outcome:
+  status: "success"
+  evidence: "Zero user-facing downtime during OpenClaw gateway incidents. Discord failover activates within 30 seconds of primary failure and hands back seamlessly on recovery."
+  blast_radius:
+    files: 4
+    lines: 90
+confidence: 0.85
+source_agent: "seed-data"
+signature: "hmac-sha256:seed-placeholder-not-verified"
+validated_by: null
+promoted: true
+provisional: false
+provisional_deadline: null
+supersedes: null
+superseded_by: null
+risk_level: "medium"
+created: "2026-03-02T00:00:39Z"
+last_confirmed: "2026-03-02T00:00:39Z"
+decay_halflife_days: 90
+archived: false
+archived_reason: null

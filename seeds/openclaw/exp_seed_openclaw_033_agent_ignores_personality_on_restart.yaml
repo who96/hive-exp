@@ -1,0 +1,35 @@
+id: "exp_1772323233000_a1b2c308"
+type: "experience"
+schema_version: "1.1.0"
+signals:
+  - "openclaw_personality_reset"
+  - "agent_ignores_md_on_restart"
+scope: "project"
+preconditions:
+  - "OpenClaw"
+  - "SOUL.md and personality files configured"
+strategy:
+  name: "force_personality_load_on_session_init"
+  description: "Ensure the agent's session initialization explicitly reads SOUL.md and identity files before processing any user message. Add a startup hook or system prompt injection that forces personality file ingestion on every cold start."
+  category: "repair"
+outcome:
+  status: "success"
+  evidence: "Agent consistently maintains persona from first message after restart. No more 'amnesia' episodes where the bot responds as a generic assistant on day two."
+  blast_radius:
+    files: 2
+    lines: 30
+confidence: 0.91
+source_agent: "seed-data"
+signature: "hmac-sha256:seed-placeholder-not-verified"
+validated_by: null
+promoted: true
+provisional: false
+provisional_deadline: null
+supersedes: null
+superseded_by: null
+risk_level: "medium"
+created: "2026-03-02T00:00:33Z"
+last_confirmed: "2026-03-02T00:00:33Z"
+decay_halflife_days: 90
+archived: false
+archived_reason: null
