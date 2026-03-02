@@ -144,13 +144,16 @@ describe('Experiences', () => {
     expect(res.status).toBe(404);
   });
 
-  it('promote sets pending_promotion', async () => {
+  it('promote moves file from provisional to promoted', async () => {
     const res = await request(app).post('/api/experience/exp_001/promote');
     expect(res.status).toBe(200);
-    expect(res.body.data.pending_promotion).toBe(true);
-    const raw = fs.readFileSync(path.join(tmpDir, 'experiences/provisional/exp_001.json'), 'utf-8');
+    expect(res.body.data.promoted).toBe(true);
+    expect(fs.existsSync(path.join(tmpDir, 'experiences/promoted/exp_001.json'))).toBe(true);
+    expect(fs.existsSync(path.join(tmpDir, 'experiences/provisional/exp_001.json'))).toBe(false);
+    const raw = fs.readFileSync(path.join(tmpDir, 'experiences/promoted/exp_001.json'), 'utf-8');
     const rec = JSON.parse(raw);
-    expect(rec.pending_promotion).toBe(true);
+    expect(rec.promoted).toBe(true);
+    expect(rec.provisional).toBe(false);
   });
 
   it('quarantine moves file and writes event', async () => {

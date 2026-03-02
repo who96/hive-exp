@@ -118,12 +118,22 @@ export function experiencesRouter(ctx: DashboardContext) {
     try {
       const raw = fs.readFileSync(filePath, 'utf-8');
       const record = JSON.parse(raw) as ExperienceRecord & { pending_promotion?: boolean };
-      record.pending_promotion = true;
-      fs.writeFileSync(filePath, JSON.stringify(record, null, 2), 'utf-8');
 
-      const payload: { exp_id: string; promoted_by: string } = {
+      record.provisional = false;
+      record.promoted = true;
+      record.provisional_deadline = null;
+      delete record.pending_promotion;
+
+      record.signature = '';
+      record.signature = ctx.signer.sign(JSON.stringify(record));
+
+      fs.writeFileSync(path.join(ctx.promotedDir, id + '.json'), JSON.stringify(record, null, 2), 'utf-8');
+      fs.unlinkSync(filePath);
+
+      const payload: { exp_id: string; promoted_by: string; auto_approved: boolean } = {
         exp_id: id,
         promoted_by: 'dashboard',
+        auto_approved: false,
       };
       const event: HiveEvent = {
         event_id: `evt_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`,
@@ -136,7 +146,7 @@ export function experiencesRouter(ctx: DashboardContext) {
 
       await ctx.eventWriter.append(event);
 
-      return res.json({ status: 'ok', data: { id, pending_promotion: true } });
+      return res.json({ status: 'ok', data: { id, promoted: true } });
     } catch (err) {
       return res.status(500).json({ status: 'error', message: String(err) });
     }
