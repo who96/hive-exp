@@ -275,7 +275,12 @@ describe('EventProjector', () => {
     projector.projectEvent(
       buildEvent({
         type: 'experience.superseded',
-        payload: { old_exp_id: 'exp_old', new_exp_id: 'exp_new', reason: 'better approach' },
+        payload: {
+          old_exp_id: 'exp_old',
+          new_exp_id: 'exp_new',
+          reason: 'better approach',
+          auto_superseded: true,
+        },
       })
     );
 

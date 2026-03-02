@@ -217,13 +217,14 @@
           "$ref": "#/definitions/expId"
         },
         "reason": {
-          "type": "string",
-          "enum": [
-            "zero_ref",
-            "low_confidence",
-            "consecutive_fail"
-          ]
-        }
+            "type": "string",
+            "enum": [
+              "zero_ref",
+              "low_confidence",
+              "consecutive_fail",
+              "superseded"
+            ]
+          }
       },
       "required": [
         "exp_id",
@@ -260,12 +261,16 @@
         "reason": {
           "type": "string",
           "minLength": 1
+        },
+        "auto_superseded": {
+          "type": "boolean"
         }
       },
       "required": [
         "old_exp_id",
         "new_exp_id",
-        "reason"
+        "reason",
+        "auto_superseded"
       ]
     },
     "confidenceDecayedPayload": {

@@ -2,7 +2,14 @@ import type { Tool } from "@modelcontextprotocol/sdk/types.js";
 import type { HiveExpContext } from "../context.js";
 import type { ToolHandler } from "./index.js";
 import type { ExperienceRecord, HiveEvent, ExperienceCreatedPayload } from "@hive-exp/core";
-import { normalizeSignal, sanitizeSecurity, sanitizePrivacy, validateExperience } from "@hive-exp/core";
+import {
+  detectDuplicates,
+  executeSupersedes,
+  normalizeSignal,
+  sanitizeSecurity,
+  sanitizePrivacy,
+  validateExperience,
+} from "@hive-exp/core";
 import * as fs from "node:fs/promises";
 import * as path from "node:path";
 import * as crypto from "node:crypto";
@@ -45,6 +52,38 @@ export const definition: Tool = {
 
 function generateId(prefix: string): string {
   return `${prefix}_${Date.now()}_${crypto.randomBytes(4).toString("hex")}`;
+}
+
+async function loadExperiencesFromDir(dirPath: string): Promise<ExperienceRecord[]> {
+  let entries: string[];
+  try {
+    entries = await fs.readdir(dirPath);
+  } catch {
+    return [];
+  }
+
+  const experiences: ExperienceRecord[] = [];
+  for (const entry of entries) {
+    if (!entry.endsWith(".json")) {
+      continue;
+    }
+    const filePath = path.join(dirPath, entry);
+    try {
+      const raw = await fs.readFile(filePath, "utf-8");
+      experiences.push(JSON.parse(raw) as ExperienceRecord);
+    } catch {
+      // skip malformed files
+    }
+  }
+  return experiences;
+}
+
+async function loadAllExperiences(provisionalDir: string, promotedDir: string): Promise<ExperienceRecord[]> {
+  const [provisional, promoted] = await Promise.all([
+    loadExperiencesFromDir(provisionalDir),
+    loadExperiencesFromDir(promotedDir),
+  ]);
+  return [...provisional, ...promoted];
 }
 
 export function createHandler(ctx: HiveExpContext): ToolHandler {
@@ -166,6 +205,26 @@ export function createHandler(ctx: HiveExpContext): ToolHandler {
     }
     await ctx.projector.incrementalSync();
 
+    let supersededIds: string[] = [];
+    if (ctx.dedupEnabled) {
+      const allExperiences = await loadAllExperiences(ctx.provisionalDir, ctx.promotedDir);
+      const duplicateActions = detectDuplicates(allExperiences);
+      const relevantActions = duplicateActions.filter(
+        (action) => action.winner_id === expId || action.loser_id === expId,
+      );
+      if (relevantActions.length > 0) {
+        const supersedeResult = await executeSupersedes(relevantActions, {
+          dataDir: ctx.dataDir,
+          signer: ctx.signer,
+          sourceAgent: record.source_agent,
+        });
+        if (supersedeResult.superseded > 0) {
+          supersededIds = supersedeResult.actions.map((action) => action.old_exp_id);
+        }
+        await ctx.projector.incrementalSync();
+      }
+    }
+
     // Check low complexity warning
     let warning: string | undefined;
     const br = outcome.blast_radius;
@@ -180,6 +239,7 @@ export function createHandler(ctx: HiveExpContext): ToolHandler {
     };
     if (ctx.autoApprove) result.auto_approved = true;
     if (warning) result.warning = warning;
+    if (supersededIds.length > 0) result.superseded_ids = supersededIds;
 
     return {
       content: [{ type: "text", text: JSON.stringify(result) }],

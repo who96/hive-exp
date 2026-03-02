@@ -114,6 +114,7 @@
         "zero_ref",
         "low_confidence",
         "consecutive_fail",
+        "superseded",
         null
       ]
     }
@@ -187,7 +188,8 @@
             "enum": [
               "zero_ref",
               "low_confidence",
-              "consecutive_fail"
+              "consecutive_fail",
+              "superseded"
             ]
           }
         }

@@ -28,6 +28,13 @@ export * from './stats/aggregator.js';
 // Lifecycle
 export * from './lifecycle.js';
 export * from './cron.js';
+export { detectDuplicates, type SupersedeAction } from './dedup.js';
+export {
+  executeSupersedes,
+  executeSupersedesSync,
+  type SupersedeOptions,
+  type SupersedeResult,
+} from './supersede.js';
 
 // Consensus
 export { ConsensusDetector, type ConsensusResult, type ConsensusDetectorOptions } from './consensus.js';

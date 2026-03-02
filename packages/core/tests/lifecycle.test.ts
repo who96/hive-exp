@@ -396,6 +396,53 @@ describe('LifecycleManager', () => {
     expect(archivedEvent?.payload).toMatchObject({ exp_id: exp.id, reason: 'low_confidence' });
   });
 
+  it('dedup: supersedes lower-confidence duplicate strategy before archive rules', () => {
+    const baseDir = tmpDir();
+    testDir = baseDir;
+    setupDataDir(baseDir);
+
+    const now = new Date('2026-03-01T00:00:00Z');
+    const winner = buildExperience({
+      id: 'exp_dedup_winner',
+      strategy: {
+        name: 'same_strategy',
+        description: 'winner',
+        category: 'repair',
+      },
+      confidence: 0.9,
+      created: now.toISOString(),
+      last_confirmed: now.toISOString(),
+    });
+    const loser = buildExperience({
+      id: 'exp_dedup_loser',
+      strategy: {
+        name: 'same_strategy',
+        description: 'loser',
+        category: 'repair',
+      },
+      confidence: 0.3,
+      created: now.toISOString(),
+      last_confirmed: now.toISOString(),
+    });
+
+    const provisionalDir = path.join(baseDir, 'experiences', 'provisional');
+    writeExperience(provisionalDir, winner);
+    writeExperience(provisionalDir, loser);
+
+    const result = runLifecycle(baseDir, now);
+
+    expect(result.superseded).toBe(1);
+    expect(fs.existsSync(path.join(baseDir, 'experiences', 'provisional', `${loser.id}.json`))).toBe(false);
+    expect(fs.existsSync(path.join(baseDir, 'experiences', 'superseded', `${loser.id}.json`))).toBe(true);
+
+    const winnerUpdated = readExperience(path.join(baseDir, 'experiences', 'provisional', `${winner.id}.json`));
+    expect(winnerUpdated.supersedes).toBe(loser.id);
+
+    const loserSuperseded = readExperience(path.join(baseDir, 'experiences', 'superseded', `${loser.id}.json`));
+    expect(loserSuperseded.archived).toBe(true);
+    expect(loserSuperseded.archived_reason).toBe('superseded');
+  });
+
   it('idempotency: running lifecycle twice doesn\'t double-archive', () => {
     const baseDir = tmpDir();
     testDir = baseDir;

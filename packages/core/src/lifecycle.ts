@@ -4,6 +4,9 @@ import * as crypto from 'node:crypto';
 import { computeDecay } from './stats/decay.js';
 import { EventWriter } from './events/writer.js';
 import { EventProjector } from './events/projector.js';
+import { resolveConfig } from './config.js';
+import { detectDuplicates } from './dedup.js';
+import { executeSupersedesSync } from './supersede.js';
 import type {
   ExperienceRecord,
   HiveEvent,
@@ -23,14 +26,15 @@ export interface LifecycleOptions {
 
 export interface LifecycleResult {
   decayed: number;
+  superseded: number;
   archived: number;
   reasons: Array<{
     exp_id: string;
-    reason: 'low_confidence' | 'zero_ref' | 'consecutive_fail';
+    reason: 'low_confidence' | 'zero_ref' | 'consecutive_fail' | 'superseded';
   }>;
 }
 
-type ArchiveReason = 'low_confidence' | 'zero_ref' | 'consecutive_fail';
+type ArchiveReason = 'low_confidence' | 'zero_ref' | 'consecutive_fail' | 'superseded';
 
 const MS_PER_DAY = 1000 * 60 * 60 * 24;
 
@@ -112,6 +116,7 @@ export class LifecycleManager {
     }
 
     let decayed = 0;
+    let superseded = 0;
     const archiveCandidates: Array<{
       exp_id: string;
       reason: ArchiveReason;
@@ -120,6 +125,7 @@ export class LifecycleManager {
     }> = [];
 
     const decayedExpIds: string[] = [];
+    const recordsForDedup: ExperienceRecord[] = [];
 
     for (const { path: filePath } of expFiles) {
       let record: ExperienceRecord;
@@ -150,38 +156,27 @@ export class LifecycleManager {
       }
 
       // --- Step 2: Auto-Archival Rules ---
+      let archiveReason: ArchiveReason | null = null;
 
-      // Rule 1: Low confidence
       if (effective < this.archiveThreshold) {
-        archiveCandidates.push({
-          exp_id: record.id,
-          reason: 'low_confidence',
-          filePath,
-          record,
-        });
-        continue; // first matching rule wins
+        archiveReason = 'low_confidence';
+      } else if (this.checkZeroRef(record, projector)) {
+        archiveReason = 'zero_ref';
+      } else if (this.checkConsecutiveFail(record.id, outcomesByExp)) {
+        archiveReason = 'consecutive_fail';
       }
 
-      // Rule 2: Zero references for N days
-      if (this.checkZeroRef(record, projector)) {
+      if (archiveReason) {
         archiveCandidates.push({
           exp_id: record.id,
-          reason: 'zero_ref',
+          reason: archiveReason,
           filePath,
           record,
         });
         continue;
       }
 
-      // Rule 3: Consecutive failures
-      if (this.checkConsecutiveFail(record.id, outcomesByExp)) {
-        archiveCandidates.push({
-          exp_id: record.id,
-          reason: 'consecutive_fail',
-          filePath,
-          record,
-        });
-      }
+      recordsForDedup.push(record);
     }
 
     // Emit confidence.decayed event (batch)
@@ -200,10 +195,34 @@ export class LifecycleManager {
       this.appendEventSync(writer, decayEvent);
     }
 
+    // --- Step 2.5: Dedup ---
+    const config = resolveConfig(this.dataDir);
+    const supersededIds = new Set<string>();
+    if (config.dedupEnabled) {
+      const dedupActions = detectDuplicates(recordsForDedup);
+      if (dedupActions.length > 0) {
+        const result = executeSupersedesSync(dedupActions, {
+          dataDir: this.dataDir,
+          signer: {
+            sign: () => 'system:lifecycle',
+            verify: () => true,
+          },
+          sourceAgent: 'lifecycle-manager',
+        });
+        superseded = result.superseded;
+        for (const applied of result.actions) {
+          supersededIds.add(applied.old_exp_id);
+        }
+      }
+    }
+
     // --- Step 3: Archive ---
     const reasons: LifecycleResult['reasons'] = [];
     for (const candidate of archiveCandidates) {
       const { exp_id, reason, filePath, record } = candidate;
+      if (supersededIds.has(exp_id) || !fs.existsSync(filePath)) {
+        continue;
+      }
 
       // Update record
       record.archived = true;
@@ -234,6 +253,7 @@ export class LifecycleManager {
 
     return {
       decayed,
+      superseded,
       archived: reasons.length,
       reasons,
     };

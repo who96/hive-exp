@@ -287,7 +287,7 @@ export class EventProjector {
   private handleSuperseded(event: HiveEvent): void {
     const p = event.payload as ExperienceSupersededPayload;
     this.db.prepare(
-      `UPDATE experience_meta SET superseded_by = ? WHERE exp_id = ?`
+      `UPDATE experience_meta SET superseded_by = ?, archived = 1, archived_reason = 'superseded' WHERE exp_id = ?`
     ).run(p.new_exp_id, p.old_exp_id);
   }
 

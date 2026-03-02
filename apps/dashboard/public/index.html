@@ -109,6 +109,23 @@
               <span class="toggle-slider"></span>
             </label>
           </div>
+          <div class="setting-item">
+            <div class="setting-info">
+              <label class="setting-label" data-i18n="dedup_enabled_label">Auto Dedup</label>
+              <p class="setting-desc" data-i18n="dedup_enabled_desc">Automatically detect and supersede duplicate experiences.</p>
+            </div>
+            <label class="toggle-switch">
+              <input type="checkbox" id="setting-dedup-enabled" />
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+          <div class="setting-item">
+            <div class="setting-info">
+              <label class="setting-label" data-i18n="dedup_interval_label">Dedup Interval (hours)</label>
+              <p class="setting-desc" data-i18n="dedup_interval_desc">How often to run batch dedup during cron.</p>
+            </div>
+            <input type="number" id="setting-dedup-interval" min="1" value="24" class="setting-number-input" />
+          </div>
         </div>
       </section>
     </main>

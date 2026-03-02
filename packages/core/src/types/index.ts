@@ -34,7 +34,7 @@ export interface ExperienceRecord {
   last_confirmed: string; // ISO 8601
   decay_halflife_days: number; // default 30
   archived: boolean;
-  archived_reason: 'zero_ref' | 'low_confidence' | 'consecutive_fail' | null;
+  archived_reason: 'zero_ref' | 'low_confidence' | 'consecutive_fail' | 'superseded' | null;
 }
 
 // Event Envelope (§4.5)
@@ -94,7 +94,7 @@ export interface ExperienceProvisionalExpiredPayload {
 
 export interface ExperienceArchivedPayload {
   exp_id: string;
-  reason: 'zero_ref' | 'low_confidence' | 'consecutive_fail';
+  reason: 'zero_ref' | 'low_confidence' | 'consecutive_fail' | 'superseded';
 }
 
 export interface ExperienceQuarantinedPayload {
@@ -106,6 +106,7 @@ export interface ExperienceSupersededPayload {
   old_exp_id: string;
   new_exp_id: string;
   reason: string;
+  auto_superseded: boolean;
 }
 
 export interface ConfidenceDecayedPayload {

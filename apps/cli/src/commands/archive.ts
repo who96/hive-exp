@@ -23,7 +23,7 @@ export function registerArchive(program: Command): void {
       }
 
       const reasonInput = (options.reason as string | undefined) ?? 'low_confidence';
-      const validReasons = ['zero_ref', 'low_confidence', 'consecutive_fail'] as const;
+      const validReasons = ['zero_ref', 'low_confidence', 'consecutive_fail', 'superseded'] as const;
       type ArchiveReason = typeof validReasons[number];
       const reason: ArchiveReason = validReasons.includes(reasonInput as ArchiveReason)
         ? (reasonInput as ArchiveReason)

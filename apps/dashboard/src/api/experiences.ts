@@ -178,7 +178,7 @@ export function experiencesRouter(ctx: DashboardContext) {
     try {
       const raw = fs.readFileSync(sourcePath, 'utf-8');
       const record = JSON.parse(raw) as ExperienceRecord & {
-        archived_reason: 'zero_ref' | 'low_confidence' | 'consecutive_fail' | null;
+        archived_reason: 'zero_ref' | 'low_confidence' | 'consecutive_fail' | 'superseded' | null;
       };
       record.archived = true;
       record.archived_reason = record.archived_reason ?? 'consecutive_fail';

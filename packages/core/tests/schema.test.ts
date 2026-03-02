@@ -193,7 +193,8 @@ describe('validateEvent', () => {
       payload: {
         old_exp_id: 'exp_1709280000_f3a7b2c1',
         new_exp_id: 'exp_1709280600_d4e5f6a7',
-        reason: 'New strategy has broader coverage.'
+        reason: 'New strategy has broader coverage.',
+        auto_superseded: true
       }
     },
     {

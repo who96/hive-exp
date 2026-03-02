@@ -18,6 +18,7 @@ export interface DashboardContext {
   provisionalDir: string;
   promotedDir: string;
   archivedDir: string;
+  supersededDir: string;
   eventsDir: string;
   dbPath: string;
   eventWriter: EventWriter;
@@ -35,10 +36,11 @@ export function createDashboardContext(dataDir?: string): DashboardContext {
   const provisionalDir = path.join(root, 'experiences', 'provisional');
   const promotedDir = path.join(root, 'experiences', 'promoted');
   const archivedDir = path.join(root, 'experiences', 'archived');
+  const supersededDir = path.join(root, 'experiences', 'superseded');
   const eventsDir = path.join(root, 'events');
   const dbDir = path.join(root, 'db');
 
-  for (const d of [experiencesDir, provisionalDir, promotedDir, archivedDir, eventsDir, dbDir]) {
+  for (const d of [experiencesDir, provisionalDir, promotedDir, archivedDir, supersededDir, eventsDir, dbDir]) {
     fs.mkdirSync(d, { recursive: true });
   }
 
@@ -95,6 +97,7 @@ export function createDashboardContext(dataDir?: string): DashboardContext {
     provisionalDir,
     promotedDir,
     archivedDir,
+    supersededDir,
     eventsDir,
     dbPath,
     eventWriter,

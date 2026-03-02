@@ -11,6 +11,10 @@ const I18N = {
     tab_settings: 'Settings',
     auto_approve_label: 'Auto Approve',
     auto_approve_desc: 'When enabled, new experiences skip review and are directly approved.',
+    dedup_enabled_label: 'Auto Dedup',
+    dedup_enabled_desc: 'Automatically detect and supersede duplicate experiences.',
+    dedup_interval_label: 'Dedup Interval (hours)',
+    dedup_interval_desc: 'How often to run batch dedup during cron.',
     auto_approve_warning: 'Warning: auto_approve=true means new experiences go directly to the trusted zone without review.',
     experience_detail: 'Experience Detail',
     view: 'View',
@@ -50,6 +54,10 @@ const I18N = {
     tab_settings: '设置',
     auto_approve_label: '自动审核',
     auto_approve_desc: '开启后，新经验无需审核直接进入信任区。',
+    dedup_enabled_label: '自动去重',
+    dedup_enabled_desc: '自动检测并替代重复经验。',
+    dedup_interval_label: '去重周期（小时）',
+    dedup_interval_desc: 'Cron 批量去重的执行频率。',
     auto_approve_warning: '注意：开启后新经验将跳过审核直接进入信任区。',
     experience_detail: '经验详情',
     view: '查看',
@@ -407,12 +415,16 @@ function renderStats() {
 }
 
 async function loadSettings() {
-  const el = document.getElementById('setting-auto-approve');
-  if (!el) return;
+  const autoApproveEl = document.getElementById('setting-auto-approve');
+  const dedupEnabledEl = document.getElementById('setting-dedup-enabled');
+  const dedupIntervalEl = document.getElementById('setting-dedup-interval');
+  if (!autoApproveEl || !dedupEnabledEl || !dedupIntervalEl) return;
   const resp = await fetchApi('/config');
   if (resp.status !== 'ok') return;
   _settingsData = resp.data;
-  el.checked = _settingsData.autoApprove;
+  autoApproveEl.checked = _settingsData.autoApprove;
+  dedupEnabledEl.checked = _settingsData.dedupEnabled;
+  dedupIntervalEl.value = String(_settingsData.dedupIntervalHours ?? 24);
 }
 
 document.getElementById('setting-auto-approve')?.addEventListener('change', async (e) => {
@@ -421,6 +433,27 @@ document.getElementById('setting-auto-approve')?.addEventListener('change', asyn
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ autoApprove: newVal }),
+  });
+});
+
+document.getElementById('setting-dedup-enabled')?.addEventListener('change', async (e) => {
+  const newVal = e.target.checked;
+  await fetch('/api/config', {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ dedupEnabled: newVal }),
+  });
+});
+
+document.getElementById('setting-dedup-interval')?.addEventListener('change', async (e) => {
+  const parsed = Number(e.target.value);
+  if (!Number.isFinite(parsed) || parsed <= 0) {
+    return;
+  }
+  await fetch('/api/config', {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ dedupIntervalHours: parsed }),
   });
 });
 
