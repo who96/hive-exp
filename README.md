@@ -2,6 +2,10 @@
 
 **AI Agent Experience Management System** — structured, cross-agent, human-reviewed knowledge for your AI tools.
 
+<p align="center">
+  <strong>English</strong> | <a href="README_CN.md">简体中文</a>
+</p>
+
 [![npm](https://img.shields.io/npm/v/hive-exp)](https://www.npmjs.com/package/hive-exp)
 [![CI](https://img.shields.io/github/actions/workflow/status/hive-exp/hive-exp/ci.yml)](https://github.com/hive-exp/hive-exp/actions)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
@@ -160,7 +164,8 @@ Data is stored under `~/.hive-exp/` by default:
 ├── experiences/
 │   ├── provisional/   — New, unreviewed experiences
 │   ├── promoted/      — Human-confirmed trusted experiences
-│   └── archived/      — Auto-archived (zero-ref, low-confidence, consecutive fail)
+│   ├── archived/      — Auto-archived (zero-ref, low-confidence, consecutive fail)
+│   └── superseded/    — Dedup-superseded experiences (backup)
 ├── events/            — Append-only JSONL event log (yyyy-mm.jsonl)
 ├── db.sqlite          — SQLite projection for fast queries
 └── signal-conventions.yaml
