@@ -29,6 +29,9 @@ body {
 }
 
 .page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
   margin-bottom: 1rem;
 }
 
@@ -39,6 +42,23 @@ body {
 .page-header p {
   margin: 0.25rem 0 0;
   color: var(--text-dim);
+}
+
+#lang-toggle {
+  padding: 4px 12px;
+  border: 1px solid var(--accent);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--accent);
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 0.8rem;
+  white-space: nowrap;
+}
+
+#lang-toggle:hover {
+  background: var(--accent);
+  color: #000;
 }
 
 .tabs {

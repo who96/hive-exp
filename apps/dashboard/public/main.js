@@ -1,4 +1,81 @@
-// Tab switching
+// --- i18n ---
+const I18N = {
+  en: {
+    page_title: 'Hive Exp Dashboard',
+    page_subtitle: 'Operational view of experiences, events, and moderation actions.',
+    tab_overview: 'Overview', tab_experiences: 'Experiences',
+    tab_events: 'Audit Log', tab_stats: 'Stats',
+    total_experiences: 'Total Experiences', provisional: 'Provisional',
+    promoted: 'Promoted', archived: 'Archived',
+    pending_review: 'Pending Review', events_24h: 'Events (24h)',
+    agents: 'Agents', agent: 'Agent', experiences_col: 'Experiences',
+    id: 'ID', status: 'Status', status_all: 'All', strategy: 'Strategy',
+    confidence: 'Confidence', actions: 'Actions',
+    promote: 'Promote', quarantine: 'Quarantine',
+    confirm_quarantine: 'Quarantine this experience?',
+    no_experiences: 'No experiences found',
+    type: 'Type', since: 'Since', limit: 'Limit', apply: 'Apply',
+    no_events: 'No events found',
+    strategy_stats: 'Strategy Statistics',
+    strategy_leaderboard: 'Strategy Leaderboard',
+    at_risk: 'At-Risk Experiences', agent_contributions: 'Agent Contributions',
+    ref_count: 'Ref Count', success_rate: 'Success Rate',
+    avg_confidence: 'Avg Confidence', risk_reason: 'Risk Reason',
+    signals: 'Signals', no_data: 'No data', count: 'Count',
+    no_at_risk: 'No at-risk experiences found.',
+    chart_success_rate: 'Success Rate (%)',
+    chart_high: 'High (≥0.7)', chart_medium: 'Medium (0.3–0.7)', chart_low: 'Low (<0.3)',
+    loading: 'Loading...', error_loading: 'Error loading',
+  },
+  zh: {
+    page_title: 'Hive 经验管理面板',
+    page_subtitle: '经验、事件与审核操作的运营视图。',
+    tab_overview: '概览', tab_experiences: '经验库',
+    tab_events: '审计日志', tab_stats: '统计',
+    total_experiences: '总经验数', provisional: '待审核',
+    promoted: '已推广', archived: '已归档',
+    pending_review: '待审阅', events_24h: '近24h事件',
+    agents: 'Agent 列表', agent: 'Agent', experiences_col: '经验数',
+    id: 'ID', status: '状态', status_all: '全部', strategy: '策略',
+    confidence: '置信度', actions: '操作',
+    promote: '推广', quarantine: '隔离',
+    confirm_quarantine: '确定要隔离这条经验吗？',
+    no_experiences: '暂无经验记录',
+    type: '类型', since: '起始时间', limit: '条数', apply: '筛选',
+    no_events: '暂无事件',
+    strategy_stats: '策略统计',
+    strategy_leaderboard: '策略排行榜',
+    at_risk: '风险经验', agent_contributions: 'Agent 贡献',
+    ref_count: '引用次数', success_rate: '成功率',
+    avg_confidence: '平均置信度', risk_reason: '风险原因',
+    signals: '信号', no_data: '暂无数据', count: '数量',
+    no_at_risk: '暂无风险经验。',
+    chart_success_rate: '成功率 (%)',
+    chart_high: '高 (≥0.7)', chart_medium: '中 (0.3–0.7)', chart_low: '低 (<0.3)',
+    loading: '加载中...', error_loading: '加载失败',
+  }
+};
+
+let _lang = localStorage.getItem('hive-lang') || 'en';
+function t(key) { return I18N[_lang]?.[key] ?? I18N.en[key] ?? key; }
+
+// --- Data cache ---
+let _overviewData = null;
+let _experiencesData = null;
+let _eventsData = null;
+let _statsData = null;
+
+// --- Chart instances ---
+let _chartRanking = null;
+let _chartConfidence = null;
+
+// --- API helper ---
+async function fetchApi(path) {
+  const res = await fetch('/api' + path);
+  return res.json();
+}
+
+// --- Tab switching ---
 document.querySelectorAll('.tab-btn').forEach(btn => {
   btn.addEventListener('click', () => {
     document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
@@ -9,69 +86,81 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
   });
 });
 
-async function fetchApi(path) {
-  const res = await fetch('/api' + path);
-  return res.json();
-}
-
-async function loadTab(tab) {
+function loadTab(tab) {
   if (tab === 'overview') loadOverview();
   else if (tab === 'experiences') loadExperiences();
   else if (tab === 'events') loadEvents();
   else if (tab === 'stats') loadStats();
 }
 
-// Overview
+// --- Overview ---
 async function loadOverview() {
   const el = document.getElementById('overview-content');
-  el.innerHTML = '<p>Loading...</p>';
+  el.innerHTML = `<p>${t('loading')}</p>`;
   const resp = await fetchApi('/overview');
-  if (resp.status !== 'ok') { el.innerHTML = '<p>Error loading overview</p>'; return; }
-  const d = resp.data;
-  el.innerHTML = `
-    <div class="stat-card"><div class="value">${d.total_experiences}</div><div class="label">Total Experiences</div></div>
-    <div class="stat-card"><div class="value">${d.provisional_count}</div><div class="label">Provisional</div></div>
-    <div class="stat-card"><div class="value">${d.promoted_count}</div><div class="label">Promoted</div></div>
-    <div class="stat-card"><div class="value">${d.archived_count}</div><div class="label">Archived</div></div>
-    <div class="stat-card"><div class="value">${d.pending_review}</div><div class="label">Pending Review</div></div>
-    <div class="stat-card"><div class="value">${d.recent_events}</div><div class="label">Events (24h)</div></div>
-  `;
+  if (resp.status !== 'ok') { el.innerHTML = `<p>${t('error_loading')}</p>`; return; }
+  _overviewData = resp.data;
+  renderOverview();
+}
+
+function renderOverview() {
+  if (!_overviewData) return;
+  const d = _overviewData;
+  const el = document.getElementById('overview-content');
+  el.innerHTML = [
+    ['total_experiences', d.total_experiences],
+    ['provisional', d.provisional_count],
+    ['promoted', d.promoted_count],
+    ['archived', d.archived_count],
+    ['pending_review', d.pending_review],
+    ['events_24h', d.recent_events],
+  ].map(([key, val]) =>
+    `<div class="stat-card"><div class="value">${val}</div><div class="label">${t(key)}</div></div>`
+  ).join('');
+
   if (d.agents && d.agents.length > 0) {
     const tbl = document.getElementById('agents-content');
     if (tbl) {
-      tbl.innerHTML = `<table class="table"><thead><tr><th>Agent</th><th>Experiences</th></tr></thead><tbody>
+      tbl.innerHTML = `<table class="table"><thead><tr><th>${t('agent')}</th><th>${t('experiences_col')}</th></tr></thead><tbody>
         ${d.agents.map(a => `<tr><td>${a.name}</td><td>${a.experience_count}</td></tr>`).join('')}
       </tbody></table>`;
     }
   }
 }
 
-// Experiences
+// --- Experiences ---
 async function loadExperiences() {
   const status = document.getElementById('filter-status')?.value || '';
   const agent = document.getElementById('filter-agent')?.value || '';
   const limit = document.getElementById('filter-limit')?.value || '50';
   const el = document.getElementById('experiences-content');
-  el.innerHTML = '<p>Loading...</p>';
+  el.innerHTML = `<p>${t('loading')}</p>`;
   let url = `/experiences?limit=${limit}`;
   if (status) url += `&status=${status}`;
   if (agent) url += `&agent=${encodeURIComponent(agent)}`;
   const resp = await fetchApi(url);
-  if (resp.status !== 'ok') { el.innerHTML = '<p>Error loading experiences</p>'; return; }
-  const items = resp.data.items || [];
-  if (items.length === 0) { el.innerHTML = '<p>No experiences found</p>'; return; }
+  if (resp.status !== 'ok') { el.innerHTML = `<p>${t('error_loading')}</p>`; return; }
+  _experiencesData = resp.data;
+  renderExperiences();
+}
+
+function renderExperiences() {
+  if (!_experiencesData) return;
+  const items = _experiencesData.items || [];
+  const el = document.getElementById('experiences-content');
+  if (items.length === 0) { el.innerHTML = `<p>${t('no_experiences')}</p>`; return; }
   el.innerHTML = `<table class="table">
-    <thead><tr><th>ID</th><th>Status</th><th>Agent</th><th>Strategy</th><th>Confidence</th><th>Actions</th></tr></thead>
+    <thead><tr><th>${t('id')}</th><th>${t('status')}</th><th>${t('agent')}</th><th>${t('strategy')}</th><th>${t('confidence')}</th><th>${t('actions')}</th></tr></thead>
     <tbody>
       ${items.map(r => `<tr>
         <td>${r.id}</td>
-        <td><span class="badge badge-${r._status}">${r._status}</span></td>
+        <td><span class="badge badge-${r._status}">${t(r._status)}</span></td>
         <td>${r.source_agent}</td>
         <td>${r.strategy?.name || ''}</td>
         <td>${(r.confidence * 100).toFixed(0)}%</td>
         <td>
-          ${r._status === 'provisional' ? `<button class="btn btn-promote" onclick="promoteExp('${r.id}')">Promote</button>` : ''}
-          ${r._status !== 'archived' ? `<button class="btn btn-quarantine" onclick="quarantineExp('${r.id}')">Quarantine</button>` : ''}
+          ${r._status === 'provisional' ? `<button class="btn btn-promote" onclick="promoteExp('${r.id}')">${t('promote')}</button>` : ''}
+          ${r._status !== 'archived' ? `<button class="btn btn-quarantine" onclick="quarantineExp('${r.id}')">${t('quarantine')}</button>` : ''}
         </td>
       </tr>`).join('')}
     </tbody>
@@ -86,27 +175,34 @@ async function promoteExp(id) {
 }
 
 async function quarantineExp(id) {
-  if (!confirm('Quarantine this experience?')) return;
+  if (!confirm(t('confirm_quarantine'))) return;
   const resp = await fetch(`/api/experience/${id}/quarantine`, { method: 'POST' });
   const data = await resp.json();
   if (data.status === 'ok') loadExperiences();
   else alert('Error: ' + data.message);
 }
 
-// Events
+// --- Events ---
 async function loadEvents() {
   const type = document.getElementById('filter-event-type')?.value || '';
   const since = document.getElementById('filter-since')?.value || '';
   const limit = document.getElementById('filter-event-limit')?.value || '100';
   const el = document.getElementById('events-content');
-  el.innerHTML = '<p>Loading...</p>';
+  el.innerHTML = `<p>${t('loading')}</p>`;
   let url = `/events?limit=${limit}`;
   if (type) url += `&type=${encodeURIComponent(type)}`;
   if (since) url += `&since=${encodeURIComponent(since)}`;
   const resp = await fetchApi(url);
-  if (resp.status !== 'ok') { el.innerHTML = '<p>Error loading events</p>'; return; }
-  const items = resp.data.items || [];
-  if (items.length === 0) { el.innerHTML = '<p>No events found</p>'; return; }
+  if (resp.status !== 'ok') { el.innerHTML = `<p>${t('error_loading')}</p>`; return; }
+  _eventsData = resp.data;
+  renderEvents();
+}
+
+function renderEvents() {
+  if (!_eventsData) return;
+  const items = _eventsData.items || [];
+  const el = document.getElementById('events-content');
+  if (items.length === 0) { el.innerHTML = `<p>${t('no_events')}</p>`; return; }
   el.innerHTML = `<ul class="timeline">
     ${items.map(e => `<li class="timeline-item" onclick="this.classList.toggle('expanded')">
       <div class="event-type">${e.type}</div>
@@ -116,14 +212,17 @@ async function loadEvents() {
   </ul>`;
 }
 
-// Stats
-let _chartRanking = null;
-let _chartConfidence = null;
-
+// --- Stats ---
 async function loadStats() {
   const resp = await fetchApi('/stats');
   if (resp.status !== 'ok') return;
-  const d = resp.data;
+  _statsData = resp.data;
+  renderStats();
+}
+
+function renderStats() {
+  if (!_statsData) return;
+  const d = _statsData;
 
   // --- Bar chart: strategy ranking ---
   const rankingCanvas = document.getElementById('chart-ranking');
@@ -136,7 +235,7 @@ async function loadStats() {
       data: {
         labels,
         datasets: [{
-          label: 'Success Rate (%)',
+          label: t('chart_success_rate'),
           data: values,
           backgroundColor: 'rgba(0,212,170,0.7)',
           borderColor: '#00d4aa',
@@ -162,7 +261,7 @@ async function loadStats() {
     _chartConfidence = new Chart(confCanvas, {
       type: 'doughnut',
       data: {
-        labels: ['High (≥0.7)', 'Medium (0.3–0.7)', 'Low (<0.3)'],
+        labels: [t('chart_high'), t('chart_medium'), t('chart_low')],
         datasets: [{
           data: [dist.high, dist.medium, dist.low],
           backgroundColor: ['#00d4aa', '#ffdd57', '#ff6b6b'],
@@ -182,10 +281,10 @@ async function loadStats() {
   if (leaderboardEl) {
     const rows = (d.strategy_ranking || []);
     if (rows.length === 0) {
-      leaderboardEl.innerHTML = '<p>No data</p>';
+      leaderboardEl.innerHTML = `<p>${t('no_data')}</p>`;
     } else {
       leaderboardEl.innerHTML = `<table class="table">
-        <thead><tr><th>Strategy</th><th>Ref Count</th><th>Success Rate</th><th>Avg Confidence</th></tr></thead>
+        <thead><tr><th>${t('strategy')}</th><th>${t('ref_count')}</th><th>${t('success_rate')}</th><th>${t('avg_confidence')}</th></tr></thead>
         <tbody>
           ${rows.map(r => `<tr>
             <td>${r.strategy_name}</td>
@@ -203,10 +302,10 @@ async function loadStats() {
   if (atRiskEl) {
     const risks = d.at_risk || [];
     if (risks.length === 0) {
-      atRiskEl.innerHTML = '<p>No at-risk experiences found.</p>';
+      atRiskEl.innerHTML = `<p>${t('no_at_risk')}</p>`;
     } else {
       atRiskEl.innerHTML = `<table class="table">
-        <thead><tr><th>ID</th><th>Signals</th><th>Strategy</th><th>Confidence</th><th>Risk Reason</th></tr></thead>
+        <thead><tr><th>${t('id')}</th><th>${t('signals')}</th><th>${t('strategy')}</th><th>${t('confidence')}</th><th>${t('risk_reason')}</th></tr></thead>
         <tbody>
           ${risks.map(r => `<tr class="at-risk">
             <td>${r.exp_id}</td>
@@ -225,10 +324,10 @@ async function loadStats() {
   if (agentsEl) {
     const agents = d.agent_contribution || [];
     if (agents.length === 0) {
-      agentsEl.innerHTML = '<p>No data</p>';
+      agentsEl.innerHTML = `<p>${t('no_data')}</p>`;
     } else {
       agentsEl.innerHTML = `<table class="table">
-        <thead><tr><th>Agent</th><th>Count</th></tr></thead>
+        <thead><tr><th>${t('agent')}</th><th>${t('count')}</th></tr></thead>
         <tbody>
           ${agents.map(a => `<tr><td>${a.agent}</td><td>${a.count}</td></tr>`).join('')}
         </tbody>
@@ -237,4 +336,27 @@ async function loadStats() {
   }
 }
 
+// --- Language toggle ---
+function setLang(lang) {
+  _lang = lang;
+  localStorage.setItem('hive-lang', lang);
+  document.documentElement.lang = lang;
+  document.title = t('page_title');
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    el.textContent = t(el.dataset.i18n);
+  });
+  document.getElementById('lang-toggle').textContent = lang === 'en' ? '中文' : 'EN';
+  const activeTab = document.querySelector('.tab-btn.active')?.dataset.tab;
+  if (activeTab === 'overview') renderOverview();
+  else if (activeTab === 'experiences') renderExperiences();
+  else if (activeTab === 'events') renderEvents();
+  else if (activeTab === 'stats') renderStats();
+}
+
+// --- Init ---
+document.getElementById('lang-toggle').addEventListener('click', () => {
+  setLang(_lang === 'en' ? 'zh' : 'en');
+});
+
+setLang(_lang);
 loadTab('overview');

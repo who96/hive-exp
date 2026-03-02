@@ -3,88 +3,92 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Hive Exp Dashboard</title>
+    <title data-i18n="page_title">Hive Exp Dashboard</title>
+    <link rel="icon" type="image/svg+xml" href="favicon.svg" />
     <link rel="stylesheet" href="styles.css" />
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
   </head>
   <body>
     <main class="app-shell">
       <header class="page-header">
-        <h1>Hive Experience Dashboard</h1>
-        <p>Operational view of experiences, events, and moderation actions.</p>
+        <div>
+          <h1 data-i18n="page_title">Hive Experience Dashboard</h1>
+          <p data-i18n="page_subtitle">Operational view of experiences, events, and moderation actions.</p>
+        </div>
+        <button id="lang-toggle">中文</button>
       </header>
 
       <div class="tabs">
-        <button class="tab-btn active" data-tab="overview">Overview</button>
-        <button class="tab-btn" data-tab="experiences">Experiences</button>
-        <button class="tab-btn" data-tab="events">Audit Log</button>
-        <button class="tab-btn" data-tab="stats">Stats</button>
+        <button class="tab-btn active" data-tab="overview" data-i18n="tab_overview">Overview</button>
+        <button class="tab-btn" data-tab="experiences" data-i18n="tab_experiences">Experiences</button>
+        <button class="tab-btn" data-tab="events" data-i18n="tab_events">Audit Log</button>
+        <button class="tab-btn" data-tab="stats" data-i18n="tab_stats">Stats</button>
       </div>
 
       <section id="overview" class="tab-pane active">
         <div id="overview-content" class="stat-grid"></div>
         <div class="agents-table">
-          <h2>Agents</h2>
+          <h2 data-i18n="agents">Agents</h2>
           <div id="agents-content"></div>
         </div>
       </section>
 
       <section id="experiences" class="tab-pane">
         <div class="filter-bar">
-          <label for="filter-status">Status</label>
+          <label for="filter-status" data-i18n="status">Status</label>
           <select id="filter-status">
-            <option value="">All</option>
-            <option value="provisional">Provisional</option>
-            <option value="promoted">Promoted</option>
-            <option value="archived">Archived</option>
+            <option value="" data-i18n="status_all">All</option>
+            <option value="provisional" data-i18n="provisional">Provisional</option>
+            <option value="promoted" data-i18n="promoted">Promoted</option>
+            <option value="archived" data-i18n="archived">Archived</option>
           </select>
 
-          <label for="filter-agent">Agent</label>
+          <label for="filter-agent" data-i18n="agent">Agent</label>
           <input id="filter-agent" type="text" placeholder="agent-a" />
 
-          <label for="filter-limit">Limit</label>
+          <label for="filter-limit" data-i18n="limit">Limit</label>
           <select id="filter-limit">
             <option value="25">25</option>
             <option value="50" selected>50</option>
             <option value="100">100</option>
           </select>
 
-          <button class="btn" onclick="loadExperiences()">Apply</button>
+          <button class="btn" onclick="loadExperiences()" data-i18n="apply">Apply</button>
         </div>
         <div id="experiences-content"></div>
       </section>
 
       <section id="events" class="tab-pane">
         <div class="filter-bar">
-          <label for="filter-event-type">Type</label>
+          <label for="filter-event-type" data-i18n="type">Type</label>
           <input id="filter-event-type" type="text" placeholder="experience.promoted" />
 
-          <label for="filter-since">Since</label>
+          <label for="filter-since" data-i18n="since">Since</label>
           <input id="filter-since" type="datetime-local" />
 
-          <label for="filter-event-limit">Limit</label>
+          <label for="filter-event-limit" data-i18n="limit">Limit</label>
           <select id="filter-event-limit">
             <option value="50">50</option>
             <option value="100" selected>100</option>
             <option value="200">200</option>
           </select>
 
-          <button class="btn" onclick="loadEvents()">Apply</button>
+          <button class="btn" onclick="loadEvents()" data-i18n="apply">Apply</button>
         </div>
         <div id="events-content"></div>
       </section>
 
       <section id="stats" class="tab-pane">
-        <h1>Strategy Statistics</h1>
+        <h1 data-i18n="strategy_stats">Strategy Statistics</h1>
         <div class="stats-charts">
           <div class="chart-container"><canvas id="chart-ranking"></canvas></div>
           <div class="chart-container"><canvas id="chart-confidence"></canvas></div>
         </div>
-        <h2>Strategy Leaderboard</h2>
+        <h2 data-i18n="strategy_leaderboard">Strategy Leaderboard</h2>
         <div id="stats-leaderboard"></div>
-        <h2>At-Risk Experiences</h2>
+        <h2 data-i18n="at_risk">At-Risk Experiences</h2>
         <div id="stats-at-risk"></div>
-        <h2>Agent Contributions</h2>
+        <h2 data-i18n="agent_contributions">Agent Contributions</h2>
         <div id="stats-agents"></div>
       </section>
     </main>
