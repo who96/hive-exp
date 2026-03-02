@@ -1,4 +1,3 @@
-import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import {
   type ExperienceCreatedPayload,
@@ -10,7 +9,7 @@ import {
 } from '@hive-exp/core';
 import { createContext } from '../context.js';
 import type { Command as CommanderCommand } from 'commander';
-import { generateEventId, generateExpId, writeExperienceFile } from '../utils.js';
+import { generateEventId, generateExpId, parseFileAuto, writeExperienceFile } from '../utils.js';
 
 export function registerAdd(program: CommanderCommand): void {
   program
@@ -34,7 +33,7 @@ export function registerAdd(program: CommanderCommand): void {
       let record: ExperienceRecord;
 
       if (options.file) {
-        const raw = JSON.parse(readFileSync(options.file, 'utf-8')) as Partial<ExperienceRecord>;
+        const raw = parseFileAuto(options.file) as Partial<ExperienceRecord>;
         const strategyName = raw.strategy?.name ?? options.strategy;
 
         if (!strategyName) {

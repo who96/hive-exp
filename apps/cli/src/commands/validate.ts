@@ -1,6 +1,6 @@
-import { readFileSync } from 'node:fs';
 import type { Command } from 'commander';
 import { validateExperience } from '@hive-exp/core';
+import { parseFileAuto } from '../utils.js';
 
 export function registerValidate(program: Command): void {
   program
@@ -8,7 +8,7 @@ export function registerValidate(program: Command): void {
     .description('Validate an experience YAML file against the schema')
     .action((path) => {
       const filePath = path as string;
-      const raw = JSON.parse(readFileSync(filePath, 'utf-8'));
+      const raw = parseFileAuto(filePath);
       const validation = validateExperience(raw);
       if (validation.valid) {
         console.log('PASS');

@@ -1,6 +1,7 @@
 import * as crypto from 'node:crypto';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
+import yaml from 'js-yaml';
 import type { ExperienceRecord } from '@hive-exp/core';
 
 export function generateExpId(): string {
@@ -20,6 +21,15 @@ export function findExperienceFile(dataDir: string, expId: string): string | nul
     }
   }
   return null;
+}
+
+export function parseFileAuto(filePath: string): unknown {
+  const content = fs.readFileSync(filePath, 'utf-8');
+  const ext = path.extname(filePath).toLowerCase();
+  if (ext === '.yaml' || ext === '.yml') {
+    return yaml.load(content);
+  }
+  return JSON.parse(content);
 }
 
 export function readExperienceFile(filePath: string): ExperienceRecord {

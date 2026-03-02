@@ -5,6 +5,11 @@
   "bin": {
     "hive-exp": "./dist/index.js"
   },
+  "exports": {
+    ".": {
+      "import": "./dist/index.js"
+    }
+  },
   "files": [
     "dist"
   ],
@@ -32,10 +37,12 @@
     "test": "vitest run"
   },
   "dependencies": {
+    "@hive-exp/core": "workspace:*",
     "commander": "^13.1.0",
-    "@hive-exp/core": "workspace:*"
+    "js-yaml": "^4.1.1"
   },
   "devDependencies": {
+    "@types/js-yaml": "^4.0.9",
     "@types/node": "^22.0.0",
     "tsup": "^8.5.1",
     "typescript": "^5.9.3",
