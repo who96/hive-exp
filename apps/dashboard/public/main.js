@@ -17,8 +17,14 @@ const I18N = {
     agents: 'Agents', agent: 'Agent', experiences_col: 'Experiences',
     id: 'ID', status: 'Status', status_all: 'All', strategy: 'Strategy',
     confidence: 'Confidence', actions: 'Actions',
-    promote: 'Promote', quarantine: 'Quarantine',
-    confirm_quarantine: 'Quarantine this experience?',
+    promote: 'Approve', quarantine: 'Archive',
+    confirm_quarantine: 'Archive this experience?',
+    select_all: 'Select All',
+    batch_approve: 'Batch Approve',
+    batch_archive: 'Batch Archive',
+    confirm_batch_approve: 'Approve selected experiences?',
+    confirm_batch_archive: 'Archive selected experiences?',
+    no_selection: 'No experiences selected',
     no_experiences: 'No experiences found',
     type: 'Type', since: 'Since', limit: 'Limit', apply: 'Apply',
     no_events: 'No events found',
@@ -50,8 +56,14 @@ const I18N = {
     agents: 'Agent 列表', agent: 'Agent', experiences_col: '经验数',
     id: 'ID', status: '状态', status_all: '全部', strategy: '策略',
     confidence: '置信度', actions: '操作',
-    promote: '推广', quarantine: '隔离',
-    confirm_quarantine: '确定要隔离这条经验吗？',
+    promote: '通过', quarantine: '归档',
+    confirm_quarantine: '确定要归档这条经验吗？',
+    select_all: '全选',
+    batch_approve: '批量通过',
+    batch_archive: '批量归档',
+    confirm_batch_approve: '确定要通过选中的经验吗？',
+    confirm_batch_archive: '确定要归档选中的经验吗？',
+    no_selection: '未选择任何经验',
     no_experiences: '暂无经验记录',
     type: '类型', since: '起始时间', limit: '条数', apply: '筛选',
     no_events: '暂无事件',
@@ -166,10 +178,15 @@ function renderExperiences(strategyFilter) {
   }
   const el = document.getElementById('experiences-content');
   if (items.length === 0) { el.innerHTML = `<p>${t('no_experiences')}</p>`; return; }
-  el.innerHTML = `<table class="table">
-    <thead><tr><th>${t('id')}</th><th>${t('status')}</th><th>${t('agent')}</th><th>${t('strategy')}</th><th>${t('confidence')}</th><th>${t('actions')}</th></tr></thead>
+  el.innerHTML = `<div class="batch-actions">
+    <button class="btn btn-promote" onclick="batchApprove()">${t('batch_approve')}</button>
+    <button class="btn btn-quarantine" onclick="batchArchive()">${t('batch_archive')}</button>
+  </div>
+  <table class="table">
+    <thead><tr><th><input type="checkbox" id="select-all" onchange="toggleSelectAll(this.checked)" /></th><th>${t('id')}</th><th>${t('status')}</th><th>${t('agent')}</th><th>${t('strategy')}</th><th>${t('confidence')}</th><th>${t('actions')}</th></tr></thead>
     <tbody>
       ${items.map(r => `<tr>
+        <td><input type="checkbox" class="exp-checkbox" value="${r.id}" data-status="${r._status}" /></td>
         <td>${r.id}</td>
         <td><span class="badge badge-${r._status}">${t(r._status)}</span></td>
         <td>${r.source_agent}</td>
@@ -190,6 +207,41 @@ async function promoteExp(id) {
   const data = await resp.json();
   if (data.status === 'ok') loadExperiences();
   else alert('Error: ' + data.message);
+}
+
+function toggleSelectAll(checked) {
+  document.querySelectorAll('.exp-checkbox').forEach(cb => { cb.checked = checked; });
+}
+
+function getSelectedIds(statusFilter) {
+  const checkboxes = document.querySelectorAll('.exp-checkbox:checked');
+  const ids = [];
+  checkboxes.forEach(cb => {
+    if (!statusFilter || cb.dataset.status === statusFilter) {
+      ids.push(cb.value);
+    }
+  });
+  return ids;
+}
+
+async function batchApprove() {
+  const ids = getSelectedIds('provisional');
+  if (ids.length === 0) { alert(t('no_selection')); return; }
+  if (!confirm(t('confirm_batch_approve'))) return;
+  for (const id of ids) {
+    await fetch(`/api/experience/${id}/promote`, { method: 'POST' });
+  }
+  loadExperiences();
+}
+
+async function batchArchive() {
+  const ids = getSelectedIds();
+  if (ids.length === 0) { alert(t('no_selection')); return; }
+  if (!confirm(t('confirm_batch_archive'))) return;
+  for (const id of ids) {
+    await fetch(`/api/experience/${id}/quarantine`, { method: 'POST' });
+  }
+  loadExperiences();
 }
 
 async function quarantineExp(id) {
