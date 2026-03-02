@@ -28,7 +28,7 @@ jobs:
           cache: 'pnpm'
 
       - name: Install dependencies
-        run: pnpm install
+        run: pnpm install --frozen-lockfile
 
       - name: Build all packages
         run: pnpm -r run build || true
@@ -55,7 +55,15 @@ jobs:
           cache: 'pnpm'
 
       - name: Install dependencies
-        run: pnpm install
+        run: pnpm install --frozen-lockfile
+
+      - name: Rebuild better-sqlite3 from source
+        run: |
+          cd node_modules/.pnpm/better-sqlite3@*/node_modules/better-sqlite3
+          npx --yes node-gyp rebuild --release
+
+      - name: Build all packages
+        run: pnpm -r run build
 
       - name: Test packages/core
         run: cd packages/core && npx vitest run
@@ -94,7 +102,7 @@ jobs:
           cache: 'pnpm'
 
       - name: Install dependencies
-        run: pnpm install
+        run: pnpm install --frozen-lockfile
 
       - name: Pack check packages/core
         run: cd packages/core && npm pack --dry-run
