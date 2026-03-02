@@ -1,43 +1,39 @@
-# Phase 0.5 Implementation Findings
+# Findings: auto_approve + Dashboard UX
 
-## Design Specs Extracted
+## Requirements
+- auto_approve boolean config: ~/.hive-exp/config.json + HIVE_EXP_AUTO_APPROVE env override, default true
+- MCP record: auto_approve=true → write to promoted/, emit experience.created + experience.promoted (auto_approved:true)
+- Dashboard: new Settings tab with auto_approve toggle + risk description text
+- Dashboard: strategy name search on Experiences tab
+- Dashboard: "View" detail button per experience row → detail panel/modal
+- Dashboard: i18n fix — provisional="待审核", promoted="已通过", remove "待审阅" card, promote button="通过"
+- CLI: `hive-exp config get/set` command
+- All three contexts add autoApprove field
 
-### Experience Record Schema v1.1.0 (§4.2)
-Key fields: id, schema_version, signals[], scope, preconditions[], strategy{name,description,category}, outcome{status,evidence,evidence_digest,blast_radius}, confidence, source_agent, signature, promoted, provisional, provisional_deadline, supersedes, superseded_by, risk_level, created, last_confirmed, decay_halflife_days, archived, archived_reason
+## Key Code Locations
 
-Removed from original: usage_stats (→ events+SQLite), corrections (→ supersedes/superseded_by), auto_promoted (→ provisional)
+### Config (TO CREATE)
+- packages/core/src/config.ts — resolveConfig(dataDir) → { autoApprove: boolean }
 
-### Event Schema (§4.5)
-Envelope: event_id, type, timestamp, source_agent, signature, payload
-11 event types: experience.created, .referenced, .outcome_recorded, .promoted, .provisional, .provisional_expired, .archived, .quarantined, .superseded, confidence.decayed, strategy.banned
+### MCP Record (MODIFY)
+- packages/mcp/src/tools/record.ts:120 — currently always writes to provisionalDir
+- Branch: if autoApprove → promotedDir, set provisional=false/promoted=true, emit 2 events
 
-### SQLite Projection (§4.6)
-Tables: usage_log (PK: event_id), experience_meta (PK: exp_id)
-Views: experience_stats (aggregates usage_log by exp_id), strategy_stats (joins experience_meta + usage_log)
-Also need: banned_strategies table (from strategy.banned events)
+### Contexts (MODIFY — add autoApprove)
+- packages/mcp/src/context.ts
+- apps/cli/src/context.ts
+- apps/dashboard/src/context.ts
 
-### Data Directory Structure (§4.1)
-Root: ~/.agents/shared-knowledge/
-- experiences/{agent}/*.yaml — immutable snapshots
-- events/events-{YYYY}-{MM}.jsonl — append-only truth
-- hive-exp.db — SQLite WAL projection
-- memory-graph.jsonl — causal chains
-- promoted/, quarantine/, archived/
-- config.yaml, signal-conventions.yaml
-- .keys/{agent}.key
+### Dashboard Backend (CREATE + MODIFY)
+- apps/dashboard/src/api/config.ts (NEW) — GET/PUT /api/config
+- apps/dashboard/src/api/index.ts — register config routes
+- apps/dashboard/src/api/experiences.ts:111-143 — promote endpoint does real move (not just pending_promotion)
 
-### Replay Mapping (§4.6)
-- experience.created → INSERT experience_meta
-- experience.referenced → INSERT usage_log (result=NULL)
-- experience.outcome_recorded → UPDATE usage_log SET result
-- experience.promoted → UPDATE experience_meta SET promoted=1
-- experience.archived → UPDATE experience_meta SET archived=1
-- experience.superseded → UPDATE experience_meta SET superseded_by
-- confidence.decayed → no SQL (computed at query time)
-- strategy.banned → INSERT banned_strategies
+### Dashboard Frontend (MODIFY)
+- apps/dashboard/public/main.js — Settings tab, search input, detail panel, i18n strings
+- apps/dashboard/public/index.html — Settings tab HTML, search input element
+- apps/dashboard/public/styles.css — Settings tab styles, detail modal styles
 
-## Technical Decisions
-- Use Vitest for testing (fast, ESM-native, TypeScript first-class)
-- Use tsup for build (esbuild-based, simple config)
-- Use better-sqlite3 for SQLite (synchronous, no external deps beyond native addon)
-- pnpm workspace for monorepo
+### CLI (CREATE + MODIFY)
+- apps/cli/src/commands/config.ts (NEW) — config get/set
+- apps/cli/src/index.ts — register config command
